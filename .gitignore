@@ -1,0 +1,16 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+
+# VS Code
+.vscode/
+
+# Fichiers de verrouillage Office (ex: ~$Partage de recette.docx)
+~$*
+
+# Backend Maven build (surchargé par backend/.gitignore mais couverture racine)
+backend/target/
+
+# Node
+frontend/node_modules/
