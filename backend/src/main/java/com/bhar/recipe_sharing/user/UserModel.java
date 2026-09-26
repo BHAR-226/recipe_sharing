@@ -20,8 +20,10 @@ public class UserModel {
     @Column(name = "pwd_hash", nullable = false)
     private String pwdHash;
 
-    private String role;
+    @Column(nullable = false)
+    private String role = "USER";
 
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @PrePersist

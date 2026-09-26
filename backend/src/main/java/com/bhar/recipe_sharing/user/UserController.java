@@ -1,8 +1,10 @@
 package com.bhar.recipe_sharing.user;
 
-import java.util.List;
-
-import org.springframework.stereotype.Controller;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,55 +14,56 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bhar.recipe_sharing.user.dto.UserProfileRequest;
+import com.bhar.recipe_sharing.user.dto.UserRequest;
+import com.bhar.recipe_sharing.user.dto.UserResponse;
+
+import jakarta.validation.Valid;
+
 @RestController 
-@RequestMapping () 
+@RequestMapping("/api/users")
 public class UserController {
     private UserService uService;
     public UserController (UserService service){
         this.uService = service;
     }
 
-    @GetMapping ("/user")
-    public List<UserModel> getUsers(){
-        return uService.getUsers();
+    @GetMapping
+    public Page<UserResponse> getUsers(@PageableDefault(size = 20) Pageable pageable){
+        return uService.getUsers(pageable);
     }
 
-    @GetMapping("/user/{id}")
-    public UserModel getUser(@PathVariable Long id){
+    @GetMapping("/{id}")
+    public UserResponse getUserById(@PathVariable Long id){
         return uService.getUserById(id);
     }
 
-    @GetMapping("/user/{email}")
-    public UserModel getUser( @PathVariable String email){
+    @GetMapping("/username/{username}")
+    public UserResponse getUserByUsername(@PathVariable String username){
+        return uService.getUserByUsername(username);
+    }
+
+    @GetMapping("/email/{email}")
+    public UserResponse getUserByEmail(@PathVariable String email){
         return uService.getUserByEmail(email);
     }
-    @GetMapping("/user/{name}")
-    public UserModel getUserByEmail ( @PathVariable String name){
-        return uService.getUserByName(name);
+
+    @PostMapping
+    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest request){
+        UserResponse created = uService.createUser(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @PostMapping("/user/create-user")
-    public UserModel addUser(@RequestBody UserModel user){
-
-        return uService.createUser(
-            user.getEmail(),
-            user.getUsername(),
-            user.getPwdHash(),
-            user.getRole()
-        );
+    @PutMapping("/{id}")
+    public UserResponse updateProfile(@PathVariable Long id,
+        @Valid @RequestBody UserProfileRequest request){
+        return uService.updateProfile(id, request);
     }
 
-    @PutMapping ("/user/edit-user")
-    public UserModel editUser (@RequestBody UserModel user){
-        return uService.editUser(
-            user.getId(),
-            user.getUsername()
-        );
-    }
-
-    @DeleteMapping("/user/{id}")
-    public void deleteUser(@PathVariable Long id){
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id){
         uService.deleteUserById(id);
+        return ResponseEntity.noContent().build();
     }
 
 }
