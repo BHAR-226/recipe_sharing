@@ -1,12 +1,13 @@
 package com.bhar.recipe_sharing.follow;
 
-import com.bhar.recipe_sharing.user.UserRepository;
-
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.bhar.recipe_sharing.exception.NotFoundException;
 import com.bhar.recipe_sharing.user.UserModel;
+import com.bhar.recipe_sharing.user.UserRepository;
+import com.bhar.recipe_sharing.user.dto.UserSummary;
 
 @Service 
 public class FollowService {
@@ -19,12 +20,11 @@ public class FollowService {
 
     public void subscribe(Long followerId, Long followingId){
         
-        UserModel follower = new UserModel();
-        follower = userRepo.findById(followerId)
-        .orElseThrow(()->new IllegalArgumentException("follower not found : "+ followerId));
+        UserModel follower = userRepo.findById(followerId)
+        .orElseThrow(()->new NotFoundException("User not found : "+ followerId));
 
         UserModel following = userRepo.findById(followingId)
-        .orElseThrow(() ->new IllegalArgumentException(
+        .orElseThrow(() ->new NotFoundException(
                         "Following user not found : " + followingId));
 
         FollowModel follow = new FollowModel();
@@ -32,29 +32,34 @@ public class FollowService {
         follow.setFollowing(following);
         
         followRepo.save(follow);
-    };
+    }
 
     public void unfollow (Long followerId, Long followingId){
-        FollowModel follow = new FollowModel();
-        follow = followRepo.findByFollowerIdAndFollowingId(followerId, followingId)
-        .orElseThrow(()->new IllegalArgumentException("not found"));
+        FollowModel follow = followRepo.findByFollowerIdAndFollowingId(followerId, followingId)
+        .orElseThrow(()->new NotFoundException("Follow not found : follower "
+            + followerId + " -> following " + followingId));
         followRepo.delete(follow);
     }
 
-    public List<UserModel> getFollowers(Long followerId){
-        // UserModel follower = new UserModel();
-        // follower = userRepo.findById(followerId)
-        // .orElseThrow(()->new IllegalArgumentException("follower not found : "+ followerId));
-
-        return followRepo.findByFollowerId(followerId);
+    public List<UserSummary> getFollowers(Long userId) {
+        requireUser(userId);
+        return followRepo.findFollowersOf(userId)
+            .stream()
+            .map(UserSummary::from)
+            .toList();
     }
-    
-    public List<UserModel> getFollowing(Long followingId){
-        // UserModel following = new UserModel();
-        // following = userRepo.findById(followingId)
-        // .orElseThrow(()->new IllegalArgumentException("subscription not found : "+ followerId));
 
-        return followRepo.findByFollowingId(followingId);
+    public List<UserSummary> getFollowing(Long userId) {
+        requireUser(userId);
+        return followRepo.findFollowingOf(userId)
+            .stream()
+            .map(UserSummary::from)
+            .toList();
+    }
+
+    private UserModel requireUser(Long userId) {
+        return userRepo.findById(userId)
+            .orElseThrow(() -> new NotFoundException("User not found : " + userId));
     }
 
 }

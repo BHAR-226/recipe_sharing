@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.bhar.recipe_sharing.comment.dto.CommentResponse;
+import com.bhar.recipe_sharing.exception.NotFoundException;
 import com.bhar.recipe_sharing.recipe.RecipeModel;
 import com.bhar.recipe_sharing.recipe.RecipeRepository;
 import com.bhar.recipe_sharing.user.UserModel;
@@ -21,36 +23,37 @@ public class CommentService {
         this.recipeRepo = recipeRepo;
     }
 
-    public CommentModel createComment(String content,Long userId, Long recipeId) {
+    public CommentResponse createComment(String content,Long userId, Long recipeId) {
         CommentModel comment = new CommentModel();
         UserModel user = userRepo.findById(userId)
-        .orElseThrow(()-> new IllegalArgumentException("User not found : "+ userId));
+        .orElseThrow(()-> new NotFoundException("User not found : "+ userId));
 
         RecipeModel recipe = recipeRepo.findById(recipeId)
-        .orElseThrow(()-> new IllegalArgumentException("Recipe not found : "+ recipeId));
+        .orElseThrow(()-> new NotFoundException("Recipe not found : "+ recipeId));
 
         comment.setUser(user);
         comment.setRecipe(recipe);
         comment.setContent(content);
-        return commentRepo.save(comment);
+        return CommentResponse.from(commentRepo.save(comment));
     }
 
-    public List<CommentModel> getUserComments(Long userId){
+    public List<CommentResponse> getUserComments(Long userId){
         UserModel user = userRepo.findById(userId)
-        .orElseThrow(() -> new IllegalArgumentException("User not found : " + userId));
+        .orElseThrow(() -> new NotFoundException("User not found : " + userId));
 
-        return commentRepo.findByUser(user);
+        return commentRepo.findByUser(user).stream().map(CommentResponse::from).toList();
     }
 
-    public List<CommentModel> getRecipeComments(Long recipeId) {
-        RecipeModel recipe = new RecipeModel();
-        recipe = recipeRepo.findById(recipeId)
-        .orElseThrow(()->new IllegalArgumentException("Recipe not found : "+recipeId));
+    public List<CommentResponse> getRecipeComments(Long recipeId) {
+        RecipeModel recipe = recipeRepo.findById(recipeId)
+        .orElseThrow(()->new NotFoundException("Recipe not found : "+recipeId));
 
-        return commentRepo.findByRecipe(recipe);
+        return commentRepo.findByRecipe(recipe).stream().map(CommentResponse::from).toList();
     }
 
     public void deleteComment(Long id) {
+        commentRepo.findById(id)
+        .orElseThrow(()->new NotFoundException("Comment not found : "+ id));
         commentRepo.deleteById(id);
     }
 }

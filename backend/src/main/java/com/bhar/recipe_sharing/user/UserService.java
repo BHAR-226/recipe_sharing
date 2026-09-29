@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 import com.bhar.recipe_sharing.user.dto.UserProfileRequest;
 import com.bhar.recipe_sharing.user.dto.UserRequest;
 import com.bhar.recipe_sharing.user.dto.UserResponse;
+import com.bhar.recipe_sharing.exception.NotFoundException;
 import com.bhar.recipe_sharing.user.exception.EmailAlreadyUsedException;
-import com.bhar.recipe_sharing.user.exception.UserNotFoundException;
 import com.bhar.recipe_sharing.user.exception.UsernameAlreadyUsedException;
 
 @Service 
@@ -33,15 +33,15 @@ public class UserService {
 
     public UserResponse getUserByUsername(String username){
         return toResponse(
-            userRepo.findByUsernameIgnoreCase(username)
-            .orElseThrow(()-> new UserNotFoundException("User not found : "+ username))
+            userRepo.findByUsernameContainingIgnoreCase(username)
+            .orElseThrow(()-> new NotFoundException("User not found : "+ username))
         );
     }
 
     public UserResponse getUserByEmail(String email){
         return toResponse(
             userRepo.findByEmailIgnoreCase(email)
-            .orElseThrow(()-> new UserNotFoundException("User not found : "+ email))
+            .orElseThrow(()-> new NotFoundException("User not found : "+ email))
         );
     }
 
@@ -98,7 +98,7 @@ public class UserService {
 
     private UserModel findUserById(Long id){
         return userRepo.findById(id)
-        .orElseThrow(()-> new UserNotFoundException("User not found : "+ id));
+        .orElseThrow(()-> new NotFoundException("User not found : "+ id));
     }
 
     private String normalizeEmail(String email){

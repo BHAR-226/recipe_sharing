@@ -1,10 +1,11 @@
 package com.bhar.recipe_sharing.recipe;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.bhar.recipe_sharing.exception.NotFoundException;
+import com.bhar.recipe_sharing.recipe.dto.RecipeResponse;
 import com.bhar.recipe_sharing.user.UserModel;
 import com.bhar.recipe_sharing.user.UserRepository;
 
@@ -19,11 +20,11 @@ public class RecipeService {
         this.userRepo = userRepo;
     }
 
-    public RecipeModel createRecipe(String title,String description,
+    public RecipeResponse createRecipe(String title,String description,
         String ingredients, String steps, Long authorId){
 
         UserModel author = userRepo.findById(authorId).
-        orElseThrow(()->new IllegalArgumentException("Author not found : "+authorId));
+        orElseThrow(()->new NotFoundException("Author not found : "+authorId));
         
         RecipeModel recipe = new RecipeModel();
         recipe.setTitle(title);
@@ -31,35 +32,46 @@ public class RecipeService {
         recipe.setIngredients(ingredients);
         recipe.setSteps(steps);
         recipe.setAuthor(author);
-        return recipeRepo.save(recipe);
+        return RecipeResponse.from(recipeRepo.save(recipe));
     }
 
-    public RecipeModel editRecipe(Long id,String title,String description,
+    public RecipeResponse editRecipe(Long id,String title,String description,
         String ingredients, String steps){
 
         RecipeModel recipe = recipeRepo.findById(id).
-        orElseThrow(()-> new IllegalArgumentException("Recipe not found : "+ id));
+        orElseThrow(()-> new NotFoundException("Recipe not found : "+ id));
 
         recipe.setTitle(title);
         recipe.setDescription(description);
         recipe.setIngredients(ingredients);
         recipe.setSteps(steps);
 
-        return recipeRepo.save(recipe);
+        return RecipeResponse.from(recipeRepo.save(recipe));
     }
 
-    public RecipeModel getRecipe(Long id){
-        return recipeRepo.findById(id)
-        .orElseThrow(()-> new IllegalArgumentException("Recipe not found : "+ id));
+    public RecipeResponse getRecipe(Long id){
+        return RecipeResponse.from(recipeRepo.findById(id)
+        .orElseThrow(()-> new NotFoundException("Recipe not found : "+ id)));
     }
-    public List<RecipeModel> getRecipes(){
-        return recipeRepo.findAll();
+
+    public List<RecipeResponse> getRecipes(){
+        return recipeRepo.findAll().stream().map(RecipeResponse::from).toList();
     }
-    public List<RecipeModel> getByTitle(String title){
-        return recipeRepo.findByTitle(title);
+
+    public List<RecipeResponse> getByTitle(String title){
+        return recipeRepo.findByTitleContainingIgnoreCase(title).stream().map(RecipeResponse::from).toList();
     }
 
     public void deleteRecipe(Long id){
+        recipeRepo.findById(id)
+        .orElseThrow(()-> new NotFoundException("Recipe not found : "+ id));
         recipeRepo.deleteById(id);
+    }
+
+    public List<RecipeResponse> userRecipes (Long userId){
+        UserModel author = userRepo.findById(userId).
+        orElseThrow(()->new NotFoundException("user not found : "+ userId));
+        return recipeRepo.findByAuthor(author).stream()
+        .map(RecipeResponse::from).toList();
     }
 }

@@ -2,6 +2,8 @@ package com.bhar.recipe_sharing.user;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -55,6 +57,7 @@ public class UserModel {
         this.email = email;
     }
 
+    @JsonIgnore
     public String getPwdHash() {
         return pwdHash;
     }

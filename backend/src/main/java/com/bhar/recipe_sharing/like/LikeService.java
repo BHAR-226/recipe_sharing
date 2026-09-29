@@ -2,6 +2,7 @@ package com.bhar.recipe_sharing.like;
 
 import org.springframework.stereotype.Service;
 
+import com.bhar.recipe_sharing.exception.NotFoundException;
 import com.bhar.recipe_sharing.recipe.RecipeModel;
 import com.bhar.recipe_sharing.recipe.RecipeRepository;
 import com.bhar.recipe_sharing.user.UserModel;
@@ -21,9 +22,9 @@ public class LikeService {
 
     public LikeModel createLike(Long userId, Long recipeId) {
         UserModel user = userRepo.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found : " + userId));
+                .orElseThrow(() -> new NotFoundException("User not found : " + userId));
         RecipeModel recipe = recipeRepo.findById(recipeId)
-                .orElseThrow(() -> new IllegalArgumentException("Recipe not found : " + recipeId));
+                .orElseThrow(() -> new NotFoundException("Recipe not found : " + recipeId));
 
         LikeModel like = new LikeModel();
         like.setUser(user);
@@ -33,14 +34,15 @@ public class LikeService {
 
     public void unlike(Long userId, Long recipeId) {
         LikeModel like = likeRepo.findByUserIdAndRecipeId(userId, recipeId)
-            .orElseThrow(() -> new IllegalArgumentException("Like not found"));
+            .orElseThrow(() -> new NotFoundException("Like not found : user "
+            + userId + " -> recipe " + recipeId));
 
         likeRepo.delete(like);
 }
 
     public int likeNumberByRecipe(Long recipeId){
         RecipeModel recipe = recipeRepo.findById(recipeId)
-        .orElseThrow(() -> new IllegalArgumentException(
+        .orElseThrow(() -> new NotFoundException(
                 "Recipe not found : " + recipeId));
         return likeRepo.countByRecipe(recipe);
     }

@@ -1,15 +1,21 @@
 package com.bhar.recipe_sharing.like;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bhar.recipe_sharing.like.dto.LikeRequest;
+
+import jakarta.validation.Valid;
+
 @RestController 
-@RequestMapping ("/like")
+@RequestMapping ("/api/like")
 public class LikeController {
     private LikeService lService;
     public LikeController (LikeService service){
@@ -22,15 +28,14 @@ public class LikeController {
     }
 
     @PostMapping ("/like")
-    public LikeModel createLike (@RequestBody LikeModel like){
-        return lService.createLike(
-            like.getUser().getId(),
-            like.getRecipe().getId()
-        );
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createLike (@Valid @RequestBody LikeRequest request){
+        lService.createLike(request.userId(), request.recipeId());
     }
 
-    @DeleteMapping ("/unlike")
-    public void unlike(@RequestBody LikeModel like){
-        lService.unlike(like.getUser().getId(), like.getRecipe().getId());
+    @DeleteMapping ("/unlike/{userId}/{recipeId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void unlike(@PathVariable Long userId, @PathVariable Long recipeId){
+        lService.unlike(userId, recipeId);
     }
 }
