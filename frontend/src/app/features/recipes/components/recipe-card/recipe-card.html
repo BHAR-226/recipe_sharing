@@ -1,0 +1,20 @@
+<a [routerLink]="['/recipes', recipe.id]" class="recipe-card">
+  @if (recipe.imageUrl) {
+    <img
+      class="recipe-card-image"
+      [src]="recipe.imageUrl | imageUrl"
+      [alt]="recipe.title"
+    />
+  }
+
+  @if (showAuthor) {
+    <div class="recipe-author">
+      <span>{{ recipe.author.username }}</span>
+    </div>
+  }
+
+  <h2>{{ recipe.title }}</h2>
+  <p>{{ recipe.description }}</p>
+
+  <span class="view-recipe">View recipe →</span>
+</a>

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,18 +38,19 @@ public class CommentController {
     }
 
     @PostMapping ("/new-comment")
-    public ResponseEntity<CommentResponse> newComment (@Valid @RequestBody CommentRequest request){
+    public ResponseEntity<CommentResponse> newComment (@Valid @RequestBody CommentRequest request,
+        Authentication authentication){
         CommentResponse created = cService.createComment(
             request.content(),
-            request.userId(),
-            request.recipeId()
+            request.recipeId(),
+            authentication.getName()
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteComment(@PathVariable Long id){
-        cService.deleteComment(id);
+    public void deleteComment(@PathVariable Long id, Authentication authentication){
+        cService.deleteComment(id, authentication.getName());
     }
 }

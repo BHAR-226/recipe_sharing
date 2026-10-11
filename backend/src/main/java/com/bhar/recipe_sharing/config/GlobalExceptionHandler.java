@@ -11,7 +11,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.bhar.recipe_sharing.exception.ForbiddenException;
 import com.bhar.recipe_sharing.exception.NotFoundException;
+import com.bhar.recipe_sharing.storage.InvalidFileException;
 import com.bhar.recipe_sharing.user.exception.EmailAlreadyUsedException;
 import com.bhar.recipe_sharing.user.exception.UsernameAlreadyUsedException;
 
@@ -28,6 +30,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(NotFoundException ex) {
         return body(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<Map<String, Object>> handleForbidden(ForbiddenException ex) {
+        return body(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
     @ExceptionHandler(EmailAlreadyUsedException.class)
@@ -66,6 +73,11 @@ private String extractConstraint(String message) {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
+        return body(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidFileException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidFile(InvalidFileException ex) {
         return body(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 

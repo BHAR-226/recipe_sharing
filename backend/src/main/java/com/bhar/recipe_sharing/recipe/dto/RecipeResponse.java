@@ -11,6 +11,7 @@ public record RecipeResponse(
     String description,
     String ingredients,
     String steps,
+    String imageUrl,
     UserSummary author,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
@@ -22,6 +23,7 @@ public record RecipeResponse(
             recipe.getDescription(),
             recipe.getIngredients(),
             recipe.getSteps(),
+            recipe.getImageUrl(),
             UserSummary.from(recipe.getAuthor()),
             recipe.getCreatedAt(),
             recipe.getUpdatedAt()

@@ -7,6 +7,7 @@ public record UserResponse(
     String username,
     String email,
     String role,
+    String profileImageUrl,
     LocalDateTime createdAt
 ) {
 }

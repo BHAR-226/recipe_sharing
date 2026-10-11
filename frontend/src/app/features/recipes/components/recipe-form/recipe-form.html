@@ -1,0 +1,39 @@
+<form [formGroup]="recipeForm" (ngSubmit)="onSubmit()">
+  <label for="title">Title</label>
+  <input id="title" type="text" formControlName="title" />
+
+  @if (recipeForm.controls.title.touched &&
+       recipeForm.controls.title.invalid) {
+    <p>Title is required.</p>
+  }
+
+  <label for="description">Description</label>
+  <textarea id="description" formControlName="description"></textarea>
+
+  <label for="ingredients">Ingredients</label>
+  <textarea id="ingredients" formControlName="ingredients"></textarea>
+
+  <label for="steps">Preparation steps</label>
+  <textarea id="steps" formControlName="steps"></textarea>
+
+  <label for="image">Image (optional)</label>
+  <input
+    id="image"
+    type="file"
+    accept="image/png,image/jpeg,image/webp,image/gif"
+    (change)="onFileSelected($event)"
+  />
+
+  @if (imageError) {
+    <p class="error">{{ imageError }}</p>
+  }
+
+  @if (imagePreview) {
+    <div class="image-preview">
+      <img [src]="imagePreview" alt="Selected preview" />
+      <button type="button" (click)="clearImage()">Remove image</button>
+    </div>
+  }
+
+  <button type="submit">{{ submitLabel }}</button>
+</form>

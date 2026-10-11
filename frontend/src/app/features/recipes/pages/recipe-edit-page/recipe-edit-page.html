@@ -1,0 +1,18 @@
+<h1>Edit recipe</h1>
+
+@if (errorMessage) {
+  <p>{{ errorMessage }}</p>
+}
+
+@if (recipe; as currentRecipe) {
+  <app-recipe-form
+    [initialValues]="{
+      title: currentRecipe.title,
+      description: currentRecipe.description,
+      ingredients: currentRecipe.ingredients,
+      steps: currentRecipe.steps
+    }"
+    submitLabel="Update recipe"
+    (submitted)="updateRecipe($event)"
+  />
+}

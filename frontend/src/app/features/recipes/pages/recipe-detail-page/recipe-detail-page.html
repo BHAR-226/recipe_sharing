@@ -1,0 +1,30 @@
+@if (recipe) {
+   <app-recipe-actions
+    [recipeId]="recipe.id"
+    [userId]="auth.userId()"
+  />
+
+  <h1>{{ recipe.title }}</h1>
+
+  @if (recipe.imageUrl) {
+    <img
+      class="recipe-hero"
+      [src]="recipe.imageUrl | imageUrl"
+      [alt]="recipe.title"
+    />
+  }
+
+  <p>{{ recipe.description }}</p>
+
+  <p>By: {{ recipe.author.username }}</p>
+
+  <h2>Ingredients</h2>
+  <p>{{ recipe.ingredients }}</p>
+
+  <h2>Steps</h2>
+  <p>{{ recipe.steps }}</p>
+  <app-recipe-comments
+    [recipeId]="recipe.id"
+    [userId]="auth.userId()"
+  />
+}

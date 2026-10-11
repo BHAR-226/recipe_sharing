@@ -4,11 +4,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bhar.recipe_sharing.user.dto.UserProfileRequest;
 import com.bhar.recipe_sharing.user.dto.UserRequest;
 import com.bhar.recipe_sharing.user.dto.UserResponse;
 import com.bhar.recipe_sharing.exception.NotFoundException;
+import com.bhar.recipe_sharing.security.AuthorizationService;
+import com.bhar.recipe_sharing.storage.FileStorageService;
 import com.bhar.recipe_sharing.user.exception.EmailAlreadyUsedException;
 import com.bhar.recipe_sharing.user.exception.UsernameAlreadyUsedException;
 
@@ -17,10 +20,15 @@ public class UserService {
     
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
+    private final FileStorageService fileStorage;
+    private final AuthorizationService authorization;
 
-    public UserService (UserRepository userRepo, PasswordEncoder passwordEncoder){
+    public UserService (UserRepository userRepo, PasswordEncoder passwordEncoder,
+        FileStorageService fileStorage, AuthorizationService authorization){
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
+        this.fileStorage = fileStorage;
+        this.authorization = authorization;
     }
 
     public Page<UserResponse> getUsers (Pageable pageable){
@@ -62,7 +70,9 @@ public class UserService {
         return toResponse(userRepo.save(user));
     }
 
-    public UserResponse updateProfile(Long id, UserProfileRequest request){
+    public UserResponse updateProfile(Long id, UserProfileRequest request, String currentEmail){
+        authorization.requireSelfOrAdmin(id, currentEmail);
+
         UserModel user = findUserById(id);
 
         String email = normalizeEmail(request.email());
@@ -87,9 +97,37 @@ public class UserService {
         return toResponse(userRepo.save(user));
     }
 
-    public void deleteUserById (Long id){
-        findUserById(id);
+    public void deleteUserById (Long id, String currentEmail){
+        authorization.requireSelfOrAdmin(id, currentEmail);
+        UserModel user = findUserById(id);
+        fileStorage.delete(user.getProfileImageUrl());
         userRepo.deleteById(id);
+    }
+
+    public UserResponse uploadProfileImage(Long id, MultipartFile file, String currentEmail){
+        authorization.requireSelfOrAdmin(id, currentEmail);
+        UserModel user = findUserById(id);
+
+        String newUrl = fileStorage.store(file, FileStorageService.PROFILES);
+        String oldUrl = user.getProfileImageUrl();
+        user.setProfileImageUrl(newUrl);
+        UserResponse response = toResponse(userRepo.save(user));
+
+        if (oldUrl != null && !oldUrl.equals(newUrl)){
+            fileStorage.delete(oldUrl);
+        }
+        return response;
+    }
+
+    public UserResponse deleteProfileImage(Long id, String currentEmail){
+        authorization.requireSelfOrAdmin(id, currentEmail);
+        UserModel user = findUserById(id);
+
+        String oldUrl = user.getProfileImageUrl();
+        user.setProfileImageUrl(null);
+        UserResponse response = toResponse(userRepo.save(user));
+        fileStorage.delete(oldUrl);
+        return response;
     }
 
     public boolean ifUserExist (Long id){
@@ -111,6 +149,7 @@ public class UserService {
             user.getUsername(),
             user.getEmail(),
             user.getRole(),
+            user.getProfileImageUrl(),
             user.getCreatedAt()
         );
     }

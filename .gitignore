@@ -18,3 +18,6 @@ frontend/node_modules/
 # Logs de crash JVM (langage server VS Code, builds, etc.)
 hs_err_pid*.log
 replay_pid*.log
+
+# Fichiers images uploadés
+/uploads/

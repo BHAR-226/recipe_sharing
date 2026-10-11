@@ -1,0 +1,59 @@
+.comments {
+  margin-top: 2rem;
+}
+
+.comments form {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.comments textarea {
+  min-height: 90px;
+  padding: 0.75rem;
+  resize: vertical;
+  font: inherit;
+}
+
+.comments button {
+  width: fit-content;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.comment {
+  padding: 1rem 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.comment p {
+  white-space: pre-wrap;
+}
+
+.delete-button {
+  color: #b42318;
+}
+
+.error {
+  color: #b42318;
+}
+
+.image-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.image-preview img {
+  max-width: 240px;
+  max-height: 240px;
+  border-radius: 8px;
+  object-fit: cover;
+}

@@ -1,0 +1,11 @@
+<h1>Create a recipe</h1>
+
+@if (message) {
+  <p>{{ message }}</p>
+}
+
+@if (errorMessage) {
+  <p>{{ errorMessage }}</p>
+}
+
+<app-recipe-form (submitted)="createRecipe($event)" />
