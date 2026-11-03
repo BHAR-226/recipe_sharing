@@ -7,6 +7,8 @@ export interface UserResponse {
   createdAt: string;
 }
 
+export type User = UserResponse;
+
 export interface UserRequest {
   username: string;
   email: string;

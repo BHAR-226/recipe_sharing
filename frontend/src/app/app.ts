@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
 import { AuthService } from './core/services/auth.service';
@@ -16,6 +16,7 @@ export class App implements OnInit {
   imageService = inject(ImageService);
   searchService = inject(SearchService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   currentYear = new Date().getFullYear();
   isMobileMenuOpen = false;
@@ -25,6 +26,7 @@ export class App implements OnInit {
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
         this.isMobileMenuOpen = false;
+        this.cdr.markForCheck();
       });
   }
 
@@ -42,10 +44,12 @@ export class App implements OnInit {
 
   toggleMobileMenu(): void {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
+    this.cdr.markForCheck();
   }
 
   closeMobileMenu(): void {
     this.isMobileMenuOpen = false;
+    this.cdr.markForCheck();
   }
 
   getAvatarUrl(path?: string): string {

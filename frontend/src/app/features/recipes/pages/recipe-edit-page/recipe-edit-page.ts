@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { RecipeService } from '../../services/recipe.service';
 import { RecipeFormComponent } from '../../components/recipe-form/recipe-form';
@@ -15,6 +15,7 @@ export class RecipeEditPage implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private recipeService = inject(RecipeService);
+  private cdr = inject(ChangeDetectorRef);
 
   recipeId!: number;
   recipe?: Recipe;
@@ -28,6 +29,7 @@ export class RecipeEditPage implements OnInit {
     if (!id) {
       this.errorMessage = 'Identifiant de recette manquant.';
       this.isLoading = false;
+      this.cdr.markForCheck();
       return;
     }
 
@@ -37,15 +39,19 @@ export class RecipeEditPage implements OnInit {
 
   loadRecipe(): void {
     this.isLoading = true;
+    this.cdr.markForCheck();
+
     this.recipeService.getRecipeById(this.recipeId).subscribe({
       next: (recipe) => {
         this.recipe = recipe;
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Error loading recipe for editing:', err);
         this.errorMessage = 'Impossible de charger la recette pour modification.';
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
     });
   }
@@ -54,6 +60,7 @@ export class RecipeEditPage implements OnInit {
     this.message = '';
     this.errorMessage = '';
     this.isSubmitting = true;
+    this.cdr.markForCheck();
 
     this.recipeService
       .updateRecipe(this.recipeId, {
@@ -67,6 +74,7 @@ export class RecipeEditPage implements OnInit {
         next: () => {
           this.isSubmitting = false;
           this.message = 'Recette mise à jour avec succès !';
+          this.cdr.markForCheck();
           setTimeout(() => {
             this.router.navigate(['/recipes', this.recipeId]);
           }, 1000);
@@ -75,8 +83,8 @@ export class RecipeEditPage implements OnInit {
           console.error('Error updating recipe:', err);
           this.isSubmitting = false;
           this.errorMessage = 'Erreur lors de la mise à jour de la recette.';
+          this.cdr.markForCheck();
         },
       });
   }
 }
-

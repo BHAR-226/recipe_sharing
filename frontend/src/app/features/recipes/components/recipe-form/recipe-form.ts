@@ -67,6 +67,7 @@ export class RecipeFormComponent implements OnInit, OnChanges {
     this.recipeForm.patchValue({
       authorId: currentId || this.defaultAuthorId,
     });
+    this.cdr.markForCheck();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -85,6 +86,7 @@ export class RecipeFormComponent implements OnInit, OnChanges {
       if (this.initialData.images && Array.isArray(this.initialData.images)) {
         this.images = [...this.initialData.images];
       }
+      this.cdr.markForCheck();
     }
   }
 
@@ -95,6 +97,7 @@ export class RecipeFormComponent implements OnInit, OnChanges {
     const filesArray = Array.from(input.files);
     this.uploadError = '';
     this.isUploadingImages = true;
+    this.cdr.markForCheck();
 
     this.imageService.uploadMultiple(filesArray).subscribe({
       next: (responses) => {
@@ -148,6 +151,7 @@ export class RecipeFormComponent implements OnInit, OnChanges {
   onSubmit(): void {
     if (this.recipeForm.invalid) {
       this.recipeForm.markAllAsTouched();
+      this.cdr.markForCheck();
       return;
     }
 

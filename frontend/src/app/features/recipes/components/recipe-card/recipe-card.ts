@@ -131,6 +131,7 @@ export class RecipeCard implements OnInit {
     event.stopPropagation();
     if (this.currentImageIndex > 0) {
       this.currentImageIndex--;
+      this.cdr.markForCheck();
     }
   }
 
@@ -139,6 +140,7 @@ export class RecipeCard implements OnInit {
     event.stopPropagation();
     if (this.currentImageIndex < this.images.length - 1) {
       this.currentImageIndex++;
+      this.cdr.markForCheck();
     }
   }
 
@@ -147,6 +149,7 @@ export class RecipeCard implements OnInit {
     event.stopPropagation();
     if (index >= 0 && index < this.images.length) {
       this.currentImageIndex = index;
+      this.cdr.markForCheck();
     }
   }
 
@@ -165,9 +168,11 @@ export class RecipeCard implements OnInit {
       if (diff > 0 && this.currentImageIndex < this.images.length - 1) {
         // Swiped left -> next
         this.currentImageIndex++;
+        this.cdr.markForCheck();
       } else if (diff < 0 && this.currentImageIndex > 0) {
         // Swiped right -> prev
         this.currentImageIndex--;
+        this.cdr.markForCheck();
       }
     }
   }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
@@ -15,6 +15,7 @@ import { UserResponse } from '../../../../shared/models/user';
 export class UserListPage implements OnInit {
   userService = inject(UserService);
   imageService = inject(ImageService);
+  private cdr = inject(ChangeDetectorRef);
 
   users: UserResponse[] = [];
   filteredUsers: UserResponse[] = [];
@@ -33,17 +34,20 @@ export class UserListPage implements OnInit {
   fetchUsers(): void {
     this.isLoading = true;
     this.errorMessage = '';
+    this.cdr.markForCheck();
 
     this.userService.getUsers(0, 50).subscribe({
       next: (page) => {
         this.users = page.content || [];
         this.applyFilter();
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Error loading user list:', err);
         this.errorMessage = 'Impossible de charger la liste des membres.';
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
     });
   }
@@ -51,16 +55,16 @@ export class UserListPage implements OnInit {
   applyFilter(): void {
     if (!this.searchQuery.trim()) {
       this.filteredUsers = [...this.users];
-      return;
+    } else {
+      const q = this.searchQuery.toLowerCase().trim();
+      this.filteredUsers = this.users.filter(
+        (u) =>
+          u.username.toLowerCase().includes(q) ||
+          u.email.toLowerCase().includes(q) ||
+          (u.role && u.role.toLowerCase().includes(q))
+      );
     }
-
-    const q = this.searchQuery.toLowerCase().trim();
-    this.filteredUsers = this.users.filter(
-      (u) =>
-        u.username.toLowerCase().includes(q) ||
-        u.email.toLowerCase().includes(q) ||
-        (u.role && u.role.toLowerCase().includes(q))
-    );
+    this.cdr.markForCheck();
   }
 
   clearSearch(): void {
@@ -72,6 +76,6 @@ export class UserListPage implements OnInit {
     event.preventDefault();
     event.stopPropagation();
     this.userService.setActiveUser(user);
+    this.cdr.markForCheck();
   }
 }
-

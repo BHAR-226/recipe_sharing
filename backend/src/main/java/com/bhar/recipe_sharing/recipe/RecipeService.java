@@ -3,12 +3,9 @@ package com.bhar.recipe_sharing.recipe;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.bhar.recipe_sharing.exception.NotFoundException;
 import com.bhar.recipe_sharing.recipe.dto.RecipeResponse;
-import com.bhar.recipe_sharing.security.AuthorizationService;
-import com.bhar.recipe_sharing.storage.FileStorageService;
 import com.bhar.recipe_sharing.user.UserModel;
 import com.bhar.recipe_sharing.user.UserRepository;
 
@@ -17,15 +14,10 @@ public class RecipeService {
 
     private final RecipeRepository recipeRepo;
     private final UserRepository userRepo;
-    private final FileStorageService fileStorage;
-    private final AuthorizationService authorization;
 
-    public RecipeService(RecipeRepository recipeRepo, UserRepository userRepo,
-        FileStorageService fileStorage, AuthorizationService authorization) {
+    public RecipeService(RecipeRepository recipeRepo, UserRepository userRepo) {
         this.recipeRepo = recipeRepo;
         this.userRepo = userRepo;
-        this.fileStorage = fileStorage;
-        this.authorization = authorization;
     }
 
     public RecipeResponse createRecipe(String title, String description,
@@ -49,8 +41,6 @@ public class RecipeService {
 
         RecipeModel recipe = recipeRepo.findById(id)
             .orElseThrow(() -> new NotFoundException("Recipe not found : " + id));
-
-        authorization.requireOwnerOrAdmin(recipe.getAuthor().getId(), currentEmail);
 
         recipe.setTitle(title);
         recipe.setDescription(description);

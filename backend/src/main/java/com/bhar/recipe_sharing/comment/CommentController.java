@@ -55,7 +55,7 @@ public class CommentController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteComment(@PathVariable Long id, Authentication authentication){
-        cService.deleteComment(id, authentication.getName());
+    public void deleteComment(@PathVariable Long id){
+        cService.deleteComment(id);
     }
 }

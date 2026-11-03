@@ -43,4 +43,28 @@ export class RecipeService {
   getUserRecipes(userId: number): Observable<Recipe[]> {
     return this.http.get<Recipe[]>(`${this.apiUrl}/user/${userId}`);
   }
+
+  getLikeCount(recipeId: number): Observable<number> {
+    return this.http.get<number>(`${getApiBaseUrl()}/like/recipe/${recipeId}`);
+  }
+
+  likeRecipe(req: { userId: number; recipeId: number }): Observable<void> {
+    return this.http.post<void>(`${getApiBaseUrl()}/like/like`, req);
+  }
+
+  unlikeRecipe(userId: number, recipeId: number): Observable<void> {
+    return this.http.delete<void>(`${getApiBaseUrl()}/like/unlike/${userId}/${recipeId}`);
+  }
+
+  getComments(recipeId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${getApiBaseUrl()}/comment/recipe/${recipeId}`);
+  }
+
+  addComment(req: { content: string; recipeId: number }): Observable<any> {
+    return this.http.post<any>(`${getApiBaseUrl()}/comment/new-comment`, req);
+  }
+
+  deleteComment(id: number): Observable<void> {
+    return this.http.delete<void>(`${getApiBaseUrl()}/comment/${id}`);
+  }
 }

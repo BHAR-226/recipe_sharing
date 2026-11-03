@@ -18,8 +18,7 @@ public class UserModel {
 
     @Column(nullable = false, unique = true)
     private String email;
-    @Column(name = "profile_image_url")
-    private String profileImageUrl;
+
     @Column(name = "pwd_hash", nullable = false)
     private String pwdHash;
 
@@ -36,13 +35,7 @@ public class UserModel {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
-    public String getProfileImageUrl() {
-        return profileImageUrl;
-    }
 
-    public void setProfileImageUrl(String profileImageUrl) {
-        this.profileImageUrl = profileImageUrl;
-    }
     public Long getId() {
         return id;
     }

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { RecipeFormComponent } from '../../components/recipe-form/recipe-form';
 import { RecipeService } from '../../services/recipe.service';
@@ -13,6 +13,7 @@ import { RecipeRequest } from '../../../../shared/models/recipe-request';
 export class RecipeCreatePage {
   private recipeService = inject(RecipeService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   message = '';
   errorMessage = '';
@@ -22,11 +23,13 @@ export class RecipeCreatePage {
     this.message = '';
     this.errorMessage = '';
     this.isSubmitting = true;
+    this.cdr.markForCheck();
 
     this.recipeService.createRecipe(request).subscribe({
       next: (created) => {
         this.isSubmitting = false;
         this.message = 'Votre recette a été publiée avec succès !';
+        this.cdr.markForCheck();
         setTimeout(() => {
           this.router.navigate(['/recipes', created.id]);
         }, 1200);
@@ -36,6 +39,7 @@ export class RecipeCreatePage {
         this.isSubmitting = false;
         this.errorMessage =
           'Une erreur est survenue lors de la création de la recette. Veuillez vérifier les champs.';
+        this.cdr.markForCheck();
       },
     });
   }

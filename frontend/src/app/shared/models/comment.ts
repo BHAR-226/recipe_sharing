@@ -7,6 +7,8 @@ export interface CommentResponse {
   createdAt: string;
 }
 
+export type Comment = CommentResponse;
+
 export interface CommentRequest {
   content: string;
   userId?: number;

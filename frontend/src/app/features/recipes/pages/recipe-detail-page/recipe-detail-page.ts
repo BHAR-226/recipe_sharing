@@ -188,7 +188,10 @@ export class RecipeDetailPage implements OnInit {
         this.comments = this.comments.filter((c) => c.id !== commentId);
         this.cdr.markForCheck();
       },
-      error: (err) => console.error('Error deleting comment:', err),
+      error: (err) => {
+        console.error('Error deleting comment:', err);
+        this.cdr.markForCheck();
+      },
     });
   }
 
@@ -217,18 +220,21 @@ export class RecipeDetailPage implements OnInit {
   setActiveImage(index: number): void {
     if (this.recipe?.images && index >= 0 && index < this.recipe.images.length) {
       this.activeImageIndex = index;
+      this.cdr.markForCheck();
     }
   }
 
   prevImage(): void {
     if (this.activeImageIndex > 0) {
       this.activeImageIndex--;
+      this.cdr.markForCheck();
     }
   }
 
   nextImage(): void {
     if (this.recipe?.images && this.activeImageIndex < this.recipe.images.length - 1) {
       this.activeImageIndex++;
+      this.cdr.markForCheck();
     }
   }
 
@@ -250,20 +256,24 @@ export class RecipeDetailPage implements OnInit {
 
   toggleDeleteConfirm(): void {
     this.showDeleteConfirm = !this.showDeleteConfirm;
+    this.cdr.markForCheck();
   }
 
   confirmDelete(): void {
     if (!this.recipe) return;
     this.isDeleting = true;
+    this.cdr.markForCheck();
 
     this.recipeService.deleteRecipe(this.recipe.id).subscribe({
       next: () => {
         this.isDeleting = false;
+        this.cdr.markForCheck();
         this.router.navigate(['/recipes']);
       },
       error: (err) => {
         console.error('Error deleting recipe:', err);
         this.isDeleting = false;
+        this.cdr.markForCheck();
       },
     });
   }

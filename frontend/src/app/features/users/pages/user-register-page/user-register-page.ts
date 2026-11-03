@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -15,6 +15,7 @@ export class UserRegisterPage {
   private authService = inject(AuthService);
   private imageService = inject(ImageService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   isSubmitting = false;
   successMessage = '';
@@ -32,6 +33,7 @@ export class UserRegisterPage {
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;
+    this.cdr.markForCheck();
   }
 
   onAvatarSelected(event: Event): void {
@@ -40,15 +42,18 @@ export class UserRegisterPage {
 
     const file = input.files[0];
     this.isUploadingAvatar = true;
+    this.cdr.markForCheck();
 
     this.imageService.uploadImage(file).subscribe({
       next: (res) => {
         this.avatarUrl = res.url;
         this.isUploadingAvatar = false;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Error uploading avatar:', err);
         this.isUploadingAvatar = false;
+        this.cdr.markForCheck();
       },
     });
   }
@@ -60,12 +65,14 @@ export class UserRegisterPage {
   onSubmit(): void {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
+      this.cdr.markForCheck();
       return;
     }
 
     this.isSubmitting = true;
     this.successMessage = '';
     this.errorMessage = '';
+    this.cdr.markForCheck();
 
     const raw = this.registerForm.getRawValue();
 
@@ -80,6 +87,7 @@ export class UserRegisterPage {
         next: (authRes) => {
           this.isSubmitting = false;
           this.successMessage = `Bienvenue sur RecipeNet, @${authRes.user.username} ! Votre compte chef est prêt.`;
+          this.cdr.markForCheck();
           setTimeout(() => {
             this.router.navigate(['/recipes']);
           }, 1200);
@@ -92,6 +100,7 @@ export class UserRegisterPage {
           } else {
             this.errorMessage = 'Une erreur est survenue lors de la création du compte. Vérifiez les informations.';
           }
+          this.cdr.markForCheck();
         },
       });
   }

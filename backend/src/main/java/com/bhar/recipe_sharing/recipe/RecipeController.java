@@ -3,7 +3,6 @@ package com.bhar.recipe_sharing.recipe;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,10 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.bhar.recipe_sharing.auth.UserPrincipal;
 import com.bhar.recipe_sharing.recipe.dto.RecipeRequest;
@@ -86,18 +83,7 @@ public class RecipeController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteRecipe(@PathVariable Long id, Authentication authentication){
-        rServie.deleteRecipe(id, authentication.getName());
-    }
-
-    @PostMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public RecipeResponse uploadImage(@PathVariable Long id,
-        @RequestParam("file") MultipartFile file, Authentication authentication){
-        return rServie.uploadImage(id, file, authentication.getName());
-    }
-
-    @DeleteMapping("/{id}/image")
-    public RecipeResponse deleteImage(@PathVariable Long id, Authentication authentication){
-        return rServie.deleteImage(id, authentication.getName());
+    public void deleteRecipe(@PathVariable Long id){
+        rServie.deleteRecipe(id);
     }
 }

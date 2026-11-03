@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -14,6 +14,7 @@ export class LoginPage implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private cdr = inject(ChangeDetectorRef);
 
   isSubmitting = false;
   errorMessage = '';
@@ -22,6 +23,7 @@ export class LoginPage implements OnInit {
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;
+    this.cdr.markForCheck();
   }
 
   loginForm = this.fb.nonNullable.group({
@@ -40,11 +42,13 @@ export class LoginPage implements OnInit {
   onSubmit(): void {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
+      this.cdr.markForCheck();
       return;
     }
 
     this.isSubmitting = true;
     this.errorMessage = '';
+    this.cdr.markForCheck();
 
     const raw = this.loginForm.getRawValue();
 
@@ -56,6 +60,7 @@ export class LoginPage implements OnInit {
       .subscribe({
         next: () => {
           this.isSubmitting = false;
+          this.cdr.markForCheck();
           this.router.navigateByUrl(this.returnUrl);
         },
         error: (err) => {
@@ -66,8 +71,8 @@ export class LoginPage implements OnInit {
           } else {
             this.errorMessage = 'Impossible de se connecter au serveur pour le moment.';
           }
+          this.cdr.markForCheck();
         },
       });
   }
 }
-
