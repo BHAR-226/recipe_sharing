@@ -4,7 +4,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,7 +14,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bhar.recipe_sharing.user.dto.UserProfileRequest;
 import com.bhar.recipe_sharing.user.dto.UserRequest;
@@ -56,14 +60,26 @@ public class UserController {
 
     @PutMapping("/{id}")
     public UserResponse updateProfile(@PathVariable Long id,
-        @Valid @RequestBody UserProfileRequest request){
-        return uService.updateProfile(id, request);
+        @Valid @RequestBody UserProfileRequest request,
+        Authentication authentication){
+        return uService.updateProfile(id, request, authentication.getName());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id){
-        uService.deleteUserById(id);
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id, Authentication authentication){
+        uService.deleteUserById(id, authentication.getName());
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public UserResponse uploadProfileImage(@PathVariable Long id,
+        @RequestParam("file") MultipartFile file, Authentication authentication){
+        return uService.uploadProfileImage(id, file, authentication.getName());
+    }
+
+    @DeleteMapping("/{id}/image")
+    public UserResponse deleteProfileImage(@PathVariable Long id, Authentication authentication){
+        return uService.deleteProfileImage(id, authentication.getName());
     }
 
 }

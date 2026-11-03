@@ -1,0 +1,13 @@
+<div class="recipe-actions">
+  <button
+    type="button"
+    (click)="toggleLike()"
+    [disabled]="loading || !userId"
+  >
+    {{ liked ? '♥ Liked' : '♡ Like' }} · {{ likeCount }}
+  </button>
+
+  @if (errorMessage) {
+    <p class="error">{{ errorMessage }}</p>
+  }
+</div>

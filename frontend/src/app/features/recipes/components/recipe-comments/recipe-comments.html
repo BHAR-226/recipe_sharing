@@ -1,0 +1,51 @@
+<section class="comments">
+  <h2>Comments ({{ comments.length }})</h2>
+
+  @if (loading) {
+    <p>Loading comments...</p>
+  }
+
+  @if (errorMessage) {
+    <p class="error">{{ errorMessage }}</p>
+  }
+
+  <form (ngSubmit)="addComment()">
+    <textarea
+      name="newComment"
+      [(ngModel)]="newComment"
+      placeholder="Share your thoughts..."
+      required
+    ></textarea>
+
+    <button type="submit" [disabled]="!newComment.trim() || !userId">
+      Post comment
+    </button>
+  </form>
+
+  <div class="comment-list">
+    @for (comment of comments; track comment.id) {
+      <article class="comment">
+        <div class="comment-header">
+          <strong>{{ comment.user.username }}</strong>
+          <small>{{ comment.createdAt | date:'medium' }}</small>
+        </div>
+
+        <p>{{ comment.content }}</p>
+
+        @if (comment.user.id === userId || auth.isAdmin()) {
+          <button
+            type="button"
+            class="delete-button"
+            (click)="deleteComment(comment.id)"
+          >
+            Delete
+          </button>
+        }
+      </article>
+    } @empty {
+      @if (!loading) {
+        <p>No comments yet. Be the first!</p>
+      }
+    }
+  </div>
+</section>
