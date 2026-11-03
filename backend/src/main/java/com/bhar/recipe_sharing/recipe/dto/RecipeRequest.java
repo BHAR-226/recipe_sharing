@@ -1,5 +1,7 @@
 package com.bhar.recipe_sharing.recipe.dto;
 
+import java.util.List;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -10,6 +12,8 @@ public record RecipeRequest(
     String description,
     String ingredients,
     String steps,
+
+    List<String> images,
 
     @NotNull(message = "authorId is required")
     Long authorId

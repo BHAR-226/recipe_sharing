@@ -1,0 +1,135 @@
+<article class="recipe-card-wrapper">
+  <a [routerLink]="['/recipes', recipe.id]" class="recipe-card">
+    <!-- Top Header: Author info on top -->
+    <div class="card-top-bar">
+      @if (showAuthor && recipe.author) {
+        <div class="author-info" (click)="goToAuthor($event, recipe.author.id)" title="Voir le profil de {{ recipe.author.username }}">
+          @if (authorAvatarUrl) {
+            <img [src]="authorAvatarUrl" [alt]="recipe.author.username" class="author-avatar-img" />
+          } @else {
+            <div class="author-avatar" aria-hidden="true">
+              {{ authorInitial }}
+            </div>
+          }
+          <div class="author-details">
+            <span class="author-name">&#64;{{ recipe.author.username }}</span>
+            @if (recipe.createdAt) {
+              <span class="card-date">{{ recipe.createdAt | date:'d MMM' }}</span>
+            }
+          </div>
+        </div>
+      } @else if (recipe.createdAt) {
+        <span class="card-date">{{ recipe.createdAt | date:'d MMMM yyyy' }}</span>
+      }
+    </div>
+
+    <!-- Instagram-style Carousel / Image Showcase -->
+    @if (images.length > 0) {
+      <div 
+        class="card-media-carousel" 
+        (touchstart)="onTouchStart($event)" 
+        (touchend)="onTouchEnd($event)">
+        <div 
+          class="carousel-track" 
+          [style.transform]="'translateX(' + (-currentImageIndex * 100) + '%)'">
+          @for (img of images; track $index) {
+            <div class="carousel-slide">
+              <img 
+                [src]="imageService.getImageUrl(img)" 
+                [alt]="recipe.title + ' - Photo ' + ($index + 1)"
+                class="carousel-img"
+                loading="lazy"
+              />
+            </div>
+          }
+        </div>
+
+        <!-- Multi-photo indicators & navigation -->
+        @if (hasMultipleImages) {
+          <!-- Slide Counter (e.g. 1/3) -->
+          <span class="carousel-counter">
+            {{ currentImageIndex + 1 }}/{{ images.length }}
+          </span>
+
+          <!-- Left Arrow -->
+          @if (currentImageIndex > 0) {
+            <button 
+              type="button"
+              class="carousel-arrow carousel-arrow-prev" 
+              (click)="prevImage($event)"
+              aria-label="Photo précédente">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+          }
+
+          <!-- Right Arrow -->
+          @if (currentImageIndex < images.length - 1) {
+            <button 
+              type="button"
+              class="carousel-arrow carousel-arrow-next" 
+              (click)="nextImage($event)"
+              aria-label="Photo suivante">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          }
+
+          <!-- Instagram-style dots -->
+          <div class="carousel-dots" (click)="$event.preventDefault(); $event.stopPropagation()">
+            @for (img of images; track $index) {
+              <button 
+                type="button"
+                class="carousel-dot" 
+                [class.active]="$index === currentImageIndex"
+                (click)="goToImage($index, $event)"
+                [attr.aria-label]="'Aller à la photo ' + ($index + 1)">
+              </button>
+            }
+          </div>
+        }
+      </div>
+    } @else {
+      <!-- Fallback luxury emblem banner -->
+      <div class="card-media-placeholder" aria-hidden="true">
+        <div class="placeholder-emblem">
+          <span class="gold">Recipe</span><span class="silver">.</span><span class="gold">Net</span>
+        </div>
+        <span class="placeholder-caption">Création Gastronomique</span>
+      </div>
+    }
+
+    <div class="card-content">
+      <h3 class="recipe-title">{{ recipe.title }}</h3>
+      
+      <p class="recipe-description">
+        {{ recipe.description || 'Une délicieuse création culinaire partagée sur RecipeNet.' }}
+      </p>
+    </div>
+
+    <div class="card-footer">
+      <!-- Interactive Like Button at bottom -->
+      <button 
+        type="button" 
+        class="card-like-btn" 
+        [class.liked]="isLiked" 
+        (click)="toggleLike($event)" 
+        [disabled]="isLiking"
+        [title]="isLiked ? 'Je n\'aime plus' : 'Coup de cœur !'">
+        <svg class="heart-icon" width="16" height="16" viewBox="0 0 24 24" [attr.fill]="isLiked ? '#E11D48' : 'none'" stroke="currentColor" stroke-width="2">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+        <span class="likes-count">{{ likesCount }}</span>
+      </button>
+
+      <span class="view-link">
+        Découvrir la création
+        <svg class="arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </span>
+    </div>
+  </a>
+</article>

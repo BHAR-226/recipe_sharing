@@ -1,5 +1,7 @@
 package com.bhar.recipe_sharing.recipe.dto;
 
+import java.util.List;
+
 import jakarta.validation.constraints.NotBlank;
 
 public record RecipeUpdateRequest(
@@ -8,6 +10,8 @@ public record RecipeUpdateRequest(
 
     String description,
     String ingredients,
-    String steps
+    String steps,
+
+    List<String> images
 ) {
 }

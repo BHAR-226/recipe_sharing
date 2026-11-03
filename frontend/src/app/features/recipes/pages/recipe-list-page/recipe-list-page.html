@@ -1,0 +1,75 @@
+<div class="recipes-container container">
+  <!-- Hero Section -->
+  <section class="recipes-hero">
+    <div class="hero-crest" aria-hidden="true">
+      <span class="gold">B</span><span class="silver">H</span><span class="gold">AR</span>
+    </div>
+    <h1 class="hero-title">L'Art & la Découverte Culinaire</h1>
+    <p class="hero-subtitle">
+      Explorez une collection de créations gastronomiques d'exception et partagez votre savoir-faire.
+    </p>
+  </section>
+
+  <!-- Error Alert -->
+  @if (errorMessage) {
+    <div class="alert alert-error">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ errorMessage }}</span>
+      <button class="btn btn-secondary" style="margin-left: auto; padding: 0.35rem 0.8rem;" (click)="fetchRecipes()">
+        Réessayer
+      </button>
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p class="loading-text">Sélection des plus belles recettes...</p>
+    </div>
+  }
+
+  <!-- Recipe Grid -->
+  @if (!isLoading && !errorMessage) {
+    <div class="results-header">
+      <span class="results-count">
+        <strong>{{ filteredRecipes.length }}</strong> recette{{ filteredRecipes.length > 1 ? 's' : '' }} disponible{{ filteredRecipes.length > 1 ? 's' : '' }}
+      </span>
+    </div>
+
+    @if (filteredRecipes.length > 0) {
+      <div class="recipes-grid">
+        @for (recipe of filteredRecipes; track recipe.id) {
+          <app-recipe-card [recipe]="recipe" />
+        }
+      </div>
+    } @else {
+      <!-- Empty State -->
+      <div class="empty-state">
+        <div class="empty-icon" aria-hidden="true">🍽️</div>
+        <h3 class="empty-title">Aucune recette trouvée</h3>
+        <p class="empty-description">
+          @if (searchQuery) {
+            Aucun résultat ne correspond à votre recherche « <em>{{ searchQuery }}</em> ».
+          } @else {
+            Aucune recette n'a encore été publiée. Soyez le premier à partager votre chef-d'œuvre !
+          }
+        </p>
+
+        @if (searchQuery) {
+          <button class="btn btn-secondary" (click)="clearSearch()">
+            Voir toutes les recettes
+          </button>
+        } @else {
+          <a routerLink="/recipes/create" class="btn btn-primary">
+            Créer la première recette
+          </a>
+        }
+      </div>
+    }
+  }
+</div>

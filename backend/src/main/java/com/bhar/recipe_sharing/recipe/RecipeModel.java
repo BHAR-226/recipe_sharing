@@ -1,6 +1,8 @@
 package com.bhar.recipe_sharing.recipe;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.bhar.recipe_sharing.user.UserModel;
 
@@ -22,6 +24,12 @@ public class RecipeModel {
     private String ingredients;
     @Column(columnDefinition = "TEXT")
     private String steps;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "recipe_images", joinColumns = @JoinColumn(name = "recipe_id"))
+    @Column(name = "image_url")
+    @OrderColumn(name = "image_order")
+    private List<String> images = new ArrayList<>();
 
     @ManyToOne
     private UserModel author;
@@ -78,6 +86,14 @@ public class RecipeModel {
 
     public void setSteps(String steps) {
         this.steps = steps;
+    }
+
+    public List<String> getImages() {
+        return images;
+    }
+
+    public void setImages(List<String> images) {
+        this.images = (images != null) ? new ArrayList<>(images) : new ArrayList<>();
     }
 
     public UserModel getAuthor() {

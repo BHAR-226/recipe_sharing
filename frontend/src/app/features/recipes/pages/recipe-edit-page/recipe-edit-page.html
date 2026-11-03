@@ -1,0 +1,60 @@
+<div class="edit-page-container container">
+  <!-- Top Bar -->
+  <div class="page-top-bar">
+    <a [routerLink]="['/recipes', recipeId]" class="back-link">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>Retour aux détails</span>
+    </a>
+  </div>
+
+  <div class="edit-header">
+    <span class="gold-badge">Modification</span>
+    <h1 class="page-title">Modifier la Recette</h1>
+    <p class="page-subtitle">
+      Ajustez vos ingrédients, peaufinez vos étapes ou mettez à jour votre création.
+    </p>
+  </div>
+
+  <!-- Alerts -->
+  @if (message) {
+    <div class="alert alert-success">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <span>{{ message }} Redirection...</span>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-error">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement des données existantes...</p>
+    </div>
+  }
+
+  <!-- Form Component -->
+  @if (!isLoading && recipe) {
+    <app-recipe-form 
+      submitLabel="Enregistrer les modifications"
+      [isSubmitting]="isSubmitting"
+      [initialData]="recipe"
+      (submitted)="updateRecipe($event)" 
+    />
+  }
+</div>
+

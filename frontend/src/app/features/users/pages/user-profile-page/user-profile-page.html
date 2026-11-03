@@ -1,0 +1,319 @@
+<div class="profile-container container">
+  <!-- Back navigation -->
+  <div class="top-nav-bar">
+    <a routerLink="/community" class="back-link">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>Retour à la communauté</span>
+    </a>
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement du profil chef...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (errorMessage) {
+    <div class="alert alert-error">
+      <span>{{ errorMessage }}</span>
+    </div>
+  }
+
+  @if (!isLoading && user) {
+    <!-- Profile Hero Card -->
+    <header class="profile-card">
+      <div class="profile-main-info">
+        <div class="profile-avatar-wrapper">
+          @if (userAvatarUrl) {
+            <img [src]="userAvatarUrl" [alt]="user.username" class="profile-avatar-img" />
+          } @else {
+            <div class="profile-avatar" aria-hidden="true">
+              {{ user.username.charAt(0).toUpperCase() }}
+            </div>
+          }
+        </div>
+
+        <div class="profile-details">
+          <div class="profile-name-row">
+            <h1 class="profile-username">&#64;{{ user.username }}</h1>
+            <span class="gold-badge">{{ user.role || 'CHEF' }}</span>
+            @if (isSelf) {
+              <span class="active-badge">Profil Actif</span>
+            }
+          </div>
+
+          <p class="profile-email">{{ user.email }}</p>
+
+          <p class="profile-joined">
+            Membre RecipeNet depuis le {{ user.createdAt | date:'MMMM yyyy' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="profile-actions">
+        @if (!isSelf) {
+          <button 
+            class="btn" 
+            [class.btn-primary]="!isFollowingThisUser" 
+            [class.btn-secondary]="isFollowingThisUser"
+            (click)="toggleFollow()"
+            [disabled]="isFollowLoading">
+            @if (isFollowingThisUser) {
+              <span>✓ Abonné</span>
+            } @else {
+              <span>+ Suivre</span>
+            }
+          </button>
+
+          <button class="btn btn-silver" (click)="setAsActiveProfile()" title="Utiliser ce compte comme auteur pour vos tests">
+            <span>Définir comme profil actif</span>
+          </button>
+        } @else {
+          <button class="btn btn-secondary" (click)="activeTab = 'edit'">
+            <span>Modifier mon profil</span>
+          </button>
+        }
+      </div>
+
+      <!-- Stats counter row -->
+      <div class="profile-stats-row">
+        <div class="stat-box" (click)="setTab('recipes')" [class.active]="activeTab === 'recipes'">
+          <span class="stat-number">{{ recipes.length }}</span>
+          <span class="stat-label">Recettes</span>
+        </div>
+
+        <div class="stat-box" (click)="setTab('followers')" [class.active]="activeTab === 'followers'">
+          <span class="stat-number">{{ followers.length }}</span>
+          <span class="stat-label">Abonnés</span>
+        </div>
+
+        <div class="stat-box" (click)="setTab('following')" [class.active]="activeTab === 'following'">
+          <span class="stat-number">{{ following.length }}</span>
+          <span class="stat-label">Abonnements</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Success message if updated -->
+    @if (editMessage) {
+      <div class="alert alert-success">
+        <span>{{ editMessage }}</span>
+      </div>
+    }
+
+    <!-- Error message if updated -->
+    @if (editErrorMessage) {
+      <div class="alert alert-error">
+        <span>{{ editErrorMessage }}</span>
+      </div>
+    }
+
+    <!-- Tabs Navigation -->
+    <nav class="profile-tabs-nav">
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'recipes'" 
+        (click)="setTab('recipes')">
+        Recettes publiées ({{ recipes.length }})
+      </button>
+
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'followers'" 
+        (click)="setTab('followers')">
+        Abonnés ({{ followers.length }})
+      </button>
+
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'following'" 
+        (click)="setTab('following')">
+        Abonnements ({{ following.length }})
+      </button>
+
+      @if (isSelf) {
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab === 'edit'" 
+          (click)="setTab('edit')">
+          Paramètres du compte
+        </button>
+      }
+    </nav>
+
+    <!-- Tab Content: Recipes -->
+    @if (activeTab === 'recipes') {
+      <section class="tab-content">
+        @if (recipes.length > 0) {
+          <div class="recipes-grid">
+            @for (recipe of recipes; track recipe.id) {
+              <app-recipe-card [recipe]="recipe" [showAuthor]="false" />
+            }
+          </div>
+        } @else {
+          <div class="tab-empty-state">
+            <p>Ce chef n'a pas encore publié de recette.</p>
+            @if (isSelf) {
+              <a routerLink="/recipes/create" class="btn btn-primary" style="margin-top: 1rem;">
+                Créer ma première recette
+              </a>
+            }
+          </div>
+        }
+      </section>
+    }
+
+    <!-- Tab Content: Followers -->
+    @if (activeTab === 'followers') {
+      <section class="tab-content">
+        @if (followers.length > 0) {
+          <div class="users-summary-grid">
+            @for (f of followers; track f.id) {
+              <a [routerLink]="['/users', f.id]" class="user-summary-card">
+                <div class="user-summary-avatar">{{ f.username.charAt(0).toUpperCase() }}</div>
+                <div class="user-summary-info">
+                  <span class="user-summary-name">&#64;{{ f.username }}</span>
+                  <span class="user-summary-link">Voir le profil →</span>
+                </div>
+              </a>
+            }
+          </div>
+        } @else {
+          <div class="tab-empty-state">
+            <p>Aucun abonné pour le moment.</p>
+          </div>
+        }
+      </section>
+    }
+
+    <!-- Tab Content: Following -->
+    @if (activeTab === 'following') {
+      <section class="tab-content">
+        @if (following.length > 0) {
+          <div class="users-summary-grid">
+            @for (f of following; track f.id) {
+              <a [routerLink]="['/users', f.id]" class="user-summary-card">
+                <div class="user-summary-avatar">{{ f.username.charAt(0).toUpperCase() }}</div>
+                <div class="user-summary-info">
+                  <span class="user-summary-name">&#64;{{ f.username }}</span>
+                  <span class="user-summary-link">Voir le profil →</span>
+                </div>
+              </a>
+            }
+          </div>
+        } @else {
+          <div class="tab-empty-state">
+            <p>Aucun abonnement pour le moment.</p>
+          </div>
+        }
+      </section>
+    }
+
+    <!-- Tab Content: Edit Form -->
+    @if (activeTab === 'edit') {
+      <section class="tab-content">
+        <div class="edit-card">
+          <h3 class="edit-card-title">Mettre à jour vos coordonnées</h3>
+
+          @if (editErrorMessage) {
+            <div class="alert alert-error">
+              <span>{{ editErrorMessage }}</span>
+            </div>
+          }
+
+          <form [formGroup]="editForm" (ngSubmit)="onUpdateProfile()">
+            <!-- Edit Avatar -->
+            <div class="form-group edit-avatar-group">
+              <label class="form-label">Photo de profil chef</label>
+              <div class="edit-avatar-row">
+                <div class="edit-avatar-preview">
+                  @if (previewEditAvatarUrl) {
+                    <img [src]="previewEditAvatarUrl" alt="Photo de profil" class="edit-avatar-img" />
+                  } @else {
+                    <div class="edit-avatar-placeholder">{{ user.username.charAt(0).toUpperCase() }}</div>
+                  }
+                </div>
+                <div class="edit-avatar-actions">
+                  <input #avatarFile type="file" accept="image/png,image/jpeg,image/webp" (change)="onAvatarSelected($event)" style="display: none;" />
+                  <button type="button" class="btn btn-secondary" (click)="avatarFile.click()" [disabled]="isUploadingAvatar">
+                    @if (isUploadingAvatar) {
+                      <span>Téléchargement...</span>
+                    } @else {
+                      <span>Changer la photo</span>
+                    }
+                  </button>
+                  @if (editAvatarUrl) {
+                    <button type="button" class="btn btn-silver" (click)="removeAvatar()">
+                      Supprimer la photo
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="edit-username" class="form-label">Nom de chef / Pseudo <span class="req">*</span></label>
+              <input id="edit-username" type="text" class="form-control" formControlName="username" />
+            </div>
+
+            <div class="form-group">
+              <label for="edit-email" class="form-label">Adresse Email <span class="req">*</span></label>
+              <input id="edit-email" type="email" class="form-control" formControlName="email" />
+            </div>
+
+            <div class="form-group">
+              <label for="edit-password" class="form-label">
+                Nouveau mot de passe (laisser vide pour ne pas modifier)
+              </label>
+              <div class="password-input-wrapper">
+                <input 
+                  id="edit-password" 
+                  [type]="showPassword ? 'text' : 'password'" 
+                  class="form-control" 
+                  formControlName="password"
+                  placeholder="Optionnel : au moins 8 caractères"
+                />
+                <button
+                  type="button"
+                  class="password-toggle-btn"
+                  (click)="togglePassword()"
+                  [attr.aria-label]="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+                  [title]="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+                >
+                  @if (showPassword) {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                      <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                  } @else {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  }
+                </button>
+              </div>
+            </div>
+
+            <div class="form-actions" style="margin-top: 1.5rem;">
+              <button type="submit" class="btn btn-primary" [disabled]="isEditing">
+                @if (isEditing) {
+                  <span>Enregistrement...</span>
+                } @else {
+                  <span>Enregistrer les modifications</span>
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+    }
+  }
+</div>
+

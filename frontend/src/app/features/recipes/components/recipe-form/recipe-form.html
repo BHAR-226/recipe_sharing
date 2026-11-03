@@ -1,0 +1,195 @@
+<form [formGroup]="recipeForm" (ngSubmit)="onSubmit()" class="recipe-form-card">
+  <!-- Title -->
+  <div class="form-group">
+    <label for="title" class="form-label">
+      Titre de la recette <span class="req">*</span>
+    </label>
+    <input 
+      id="title" 
+      type="text" 
+      class="form-control"
+      [class.is-invalid]="recipeForm.controls.title.touched && recipeForm.controls.title.invalid"
+      formControlName="title" 
+      placeholder="ex: Risotto crémeux aux morilles et parmesan"
+    />
+    @if (recipeForm.controls.title.touched && recipeForm.controls.title.invalid) {
+      <p class="form-error">Le titre est obligatoire (minimum 3 caractères).</p>
+    }
+  </div>
+
+  <!-- Images Upload Section -->
+  <div class="form-group images-upload-section">
+    <div class="images-section-header">
+      <div>
+        <label class="form-label" style="margin-bottom: 0.2rem;">
+          Photographies de la création culinaire
+        </label>
+        <p class="images-hint">
+          Ajoutez une ou plusieurs photos. <strong>La première photo sera la représentante officielle</strong> dans le fil d'actualité (avec défilement horizontal type Instagram).
+        </p>
+      </div>
+
+      <input 
+        #fileInput 
+        type="file" 
+        multiple 
+        accept="image/png,image/jpeg,image/webp,image/gif" 
+        (change)="onFilesSelected($event)" 
+        style="display: none;"
+      />
+      <button 
+        type="button" 
+        class="btn btn-secondary upload-trigger-btn" 
+        (click)="fileInput.click()" 
+        [disabled]="isUploadingImages">
+        @if (isUploadingImages) {
+          <span class="btn-spinner"></span>
+          <span>Téléchargement...</span>
+        } @else {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span>+ Ajouter des photos</span>
+        }
+      </button>
+    </div>
+
+    @if (uploadError) {
+      <p class="form-error" style="margin-top: 0.5rem;">{{ uploadError }}</p>
+    }
+
+    <!-- Image Previews Grid -->
+    @if (images.length > 0) {
+      <div class="images-preview-grid">
+        @for (img of images; track $index) {
+          <div class="image-preview-card" [class.is-primary]="$index === 0">
+            <div class="preview-img-wrapper">
+              <img [src]="imageService.getImageUrl(img)" [alt]="'Photo ' + ($index + 1)" class="preview-img" />
+              @if ($index === 0) {
+                <span class="primary-badge" title="Cette photo apparaîtra en couverture">
+                  ⭐ Photo principale
+                </span>
+              }
+            </div>
+
+            <div class="preview-actions">
+              @if ($index > 0) {
+                <button 
+                  type="button" 
+                  class="preview-action-btn primary-btn-shortcut" 
+                  (click)="makePrimary($index)" 
+                  title="Définir en première position (représentante)">
+                  ★ En tête
+                </button>
+              }
+
+              <div class="reorder-btns">
+                <button 
+                  type="button" 
+                  class="reorder-btn" 
+                  [disabled]="$index === 0" 
+                  (click)="moveLeft($index)" 
+                  title="Déplacer vers la gauche">
+                  ◀
+                </button>
+                <button 
+                  type="button" 
+                  class="reorder-btn" 
+                  [disabled]="$index === images.length - 1" 
+                  (click)="moveRight($index)" 
+                  title="Déplacer vers la droite">
+                  ▶
+                </button>
+              </div>
+
+              <button 
+                type="button" 
+                class="remove-img-btn" 
+                (click)="removeImage($index)" 
+                title="Supprimer cette photo">
+                ✕
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-upload-box" (click)="fileInput.click()">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-upload-icon">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <span class="empty-upload-title">Cliquez pour téléverser vos photos de plat</span>
+        <span class="empty-upload-sub">Glissez plusieurs photos (JPG, PNG, WEBP) pour sublimer votre création</span>
+      </div>
+    }
+  </div>
+
+  <!-- Description -->
+  <div class="form-group">
+    <label for="description" class="form-label">
+      Description & Histoire du plat
+    </label>
+    <textarea 
+      id="description" 
+      rows="3"
+      class="form-control" 
+      formControlName="description"
+      placeholder="Partagez l'inspiration, les arômes ou le contexte de cette recette..."
+    ></textarea>
+  </div>
+
+  <div class="form-grid-two">
+    <!-- Ingredients (Optional) -->
+    <div class="form-group">
+      <label for="ingredients" class="form-label">
+        Ingrédients <span class="optional-tag">(Optionnel)</span>
+      </label>
+      <textarea 
+        id="ingredients" 
+        rows="8"
+        class="form-control"
+        formControlName="ingredients"
+        placeholder="Un ingrédient par ligne :
+- 250g de riz Carnaroli
+- 150g de morilles fraîches
+- 1 échalote ciselée
+- 50g de beurre doux
+- 60g de parmesan râpé"
+      ></textarea>
+    </div>
+
+    <!-- Steps (Optional) -->
+    <div class="form-group">
+      <label for="steps" class="form-label">
+        Étapes de préparation <span class="optional-tag">(Optionnel)</span>
+      </label>
+      <textarea 
+        id="steps" 
+        rows="8"
+        class="form-control"
+        formControlName="steps"
+        placeholder="Décrivez les étapes pas à pas :
+1. Nettoyer et faire suer les morilles.
+2. Faire revenir l'échalote dans le beurre.
+3. Nacrer le riz puis mouiller au bouillon chaud progressivement.
+4. Monter au beurre et parsemer de parmesan."
+      ></textarea>
+    </div>
+  </div>
+
+  <!-- Submit Row -->
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary submit-btn" [disabled]="isSubmitting || isUploadingImages">
+      @if (isSubmitting) {
+        <span class="btn-spinner"></span>
+        <span>Enregistrement en cours...</span>
+      } @else {
+        <span>{{ submitLabel }}</span>
+      }
+    </button>
+  </div>
+</form>

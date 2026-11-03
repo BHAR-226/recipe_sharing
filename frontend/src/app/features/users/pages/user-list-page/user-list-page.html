@@ -1,0 +1,135 @@
+<div class="users-container container">
+  <!-- Hero Section -->
+  <section class="users-hero">
+    <div class="hero-crest" aria-hidden="true">
+      <span class="gold">Recipe</span><span class="silver">.</span><span class="gold">Net</span>
+    </div>
+    <h1 class="hero-title">La Communauté des Chefs</h1>
+    <p class="hero-subtitle">
+      Découvrez les créateurs culinaires de RecipeNet, explorez leurs créations et abonnez-vous à leurs talents.
+    </p>
+
+    <!-- Search bar & Register button -->
+    <div class="search-bar-wrapper">
+      <div class="search-box">
+        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Rechercher un chef par pseudo ou email..."
+          [(ngModel)]="searchQuery"
+          (input)="applyFilter()"
+        />
+        @if (searchQuery) {
+          <button class="clear-search-btn" (click)="clearSearch()" title="Effacer la recherche">
+            ✕
+          </button>
+        }
+      </div>
+
+      <a routerLink="/register" class="btn btn-primary register-shortcut-btn">
+        <span>+ Inscrire un chef</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Error Alert -->
+  @if (errorMessage) {
+    <div class="alert alert-error">
+      <span>{{ errorMessage }}</span>
+      <button class="btn btn-secondary" style="margin-left: auto; padding: 0.35rem 0.8rem;" (click)="fetchUsers()">
+        Réessayer
+      </button>
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p class="loading-text">Chargement des membres de la communauté...</p>
+    </div>
+  }
+
+  <!-- Results Count -->
+  @if (!isLoading && !errorMessage) {
+    <div class="results-header">
+      <span class="results-count">
+        <strong>{{ filteredUsers.length }}</strong> membre{{ filteredUsers.length > 1 ? 's' : '' }} enregistré{{ filteredUsers.length > 1 ? 's' : '' }}
+      </span>
+
+      @if (userService.activeUser()) {
+        <span class="active-user-indicator">
+          Vous agissez en tant que : <strong>&#64;{{ userService.activeUser()?.username }}</strong>
+        </span>
+      }
+    </div>
+
+    <!-- Users Grid -->
+    @if (filteredUsers.length > 0) {
+      <div class="users-grid">
+        @for (user of filteredUsers; track user.id) {
+          <article class="chef-card">
+            <div class="chef-card-header">
+              <div class="chef-avatar">
+                @if (getChefAvatarUrl(user.avatarUrl)) {
+                  <img [src]="getChefAvatarUrl(user.avatarUrl)" [alt]="user.username" class="chef-avatar-img" />
+                } @else {
+                  {{ user.username.charAt(0).toUpperCase() }}
+                }
+              </div>
+              <span class="gold-badge">{{ user.role || 'CHEF' }}</span>
+            </div>
+
+            <div class="chef-card-body">
+              <h3 class="chef-name">&#64;{{ user.username }}</h3>
+              <p class="chef-email">{{ user.email }}</p>
+              <p class="chef-date">Membre depuis {{ user.createdAt | date:'MMM yyyy' }}</p>
+            </div>
+
+            <div class="chef-card-footer">
+              <a [routerLink]="['/users', user.id]" class="btn btn-secondary card-link-btn">
+                Voir le profil
+              </a>
+
+              @if (userService.activeUser()?.id !== user.id) {
+                <button class="btn btn-silver card-active-btn" (click)="makeActive(user, $event)" title="Utiliser comme profil actif">
+                  Activer
+                </button>
+              } @else {
+                <span class="self-tag">Actif</span>
+              }
+            </div>
+          </article>
+        }
+      </div>
+    } @else {
+      <!-- Empty State -->
+      <div class="empty-state">
+        <div class="empty-icon" aria-hidden="true">👨‍🍳</div>
+        <h3 class="empty-title">Aucun chef trouvé</h3>
+        <p class="empty-description">
+          @if (searchQuery) {
+            Aucun résultat ne correspond à votre recherche « <em>{{ searchQuery }}</em> ».
+          } @else {
+            Aucun membre n'est encore inscrit dans la communauté.
+          }
+        </p>
+
+        @if (searchQuery) {
+          <button class="btn btn-secondary" (click)="clearSearch()">
+            Voir tous les chefs
+          </button>
+        } @else {
+          <a routerLink="/register" class="btn btn-primary">
+            Créer le premier profil chef
+          </a>
+        }
+      </div>
+    }
+  }
+</div>
+

@@ -25,6 +25,9 @@ public class UserModel {
     @Column(nullable = false)
     private String role = "USER";
 
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -72,6 +75,14 @@ public class UserModel {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 
     public LocalDateTime getCreatedAt() {

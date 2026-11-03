@@ -1,0 +1,307 @@
+<div class="detail-container container">
+  <!-- Back Button & Breadcrumb -->
+  <div class="top-nav-bar">
+    <a routerLink="/recipes" class="back-link">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>Toutes les recettes</span>
+    </a>
+
+    @if (recipe) {
+      <div class="actions-group">
+        <!-- Like Button -->
+        <button 
+          class="btn btn-like" 
+          [class.liked]="isLiked" 
+          (click)="toggleLike()" 
+          [disabled]="isLiking"
+          title="Ajouter aux coups de cœur">
+          <svg class="heart-icon" width="18" height="18" viewBox="0 0 24 24" [attr.fill]="isLiked ? '#E11D48' : 'none'" stroke="currentColor" stroke-width="2">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          <span>{{ likesCount }}</span>
+        </button>
+
+        <!-- Edit & Delete: ONLY for the author or admin -->
+        @if (canEditOrDelete) {
+          <a [routerLink]="['/recipes', recipe.id, 'edit']" class="btn btn-secondary action-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            <span>Modifier</span>
+          </a>
+
+          <button (click)="toggleDeleteConfirm()" class="btn btn-danger action-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span>Supprimer</span>
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Delete Confirmation Modal / Banner -->
+  @if (showDeleteConfirm) {
+    <div class="delete-banner">
+      <div class="delete-banner-text">
+        <strong>Confirmer la suppression</strong>
+        <p>Êtes-vous sûr de vouloir supprimer définitivement cette recette ? Cette action est irréversible.</p>
+      </div>
+      <div class="delete-banner-actions">
+        <button class="btn btn-secondary" (click)="toggleDeleteConfirm()" [disabled]="isDeleting">
+          Annuler
+        </button>
+        <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="isDeleting">
+          @if (isDeleting) {
+            <span>Suppression...</span>
+          } @else {
+            <span>Oui, supprimer</span>
+          }
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p class="loading-text">Chargement de la recette...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (errorMessage) {
+    <div class="alert alert-error">
+      <span>{{ errorMessage }}</span>
+    </div>
+  }
+
+  <!-- Recipe Details -->
+  @if (!isLoading && recipe) {
+    <article class="recipe-article">
+      <!-- Header Banner -->
+      <header class="recipe-header">
+        <div class="header-badge-row">
+          <span class="gold-badge">Recette d'exception</span>
+          @if (recipe.createdAt) {
+            <span class="recipe-date">Publié le {{ recipe.createdAt | date:'d MMMM yyyy' }}</span>
+          }
+        </div>
+
+        <h1 class="recipe-main-title">{{ recipe.title }}</h1>
+
+        <!-- Author Bar -->
+        @if (recipe.author) {
+          <div class="author-bar">
+            @if (authorAvatarUrl) {
+              <img [src]="authorAvatarUrl" [alt]="recipe.author.username" class="author-avatar-img" />
+            } @else {
+              <div class="author-avatar" aria-hidden="true">{{ authorInitial }}</div>
+            }
+            <div class="author-info">
+              <span class="author-title">Recette proposée par</span>
+              <a [routerLink]="['/users', recipe.author.id]" class="author-name-link">
+                &#64;{{ recipe.author.username }}
+              </a>
+            </div>
+          </div>
+        }
+      </header>
+
+      <!-- Recipe Gallery Showcase -->
+      @if (recipe.images && recipe.images.length > 0) {
+        <section class="gallery-section">
+          <div class="gallery-main-wrapper">
+            <img 
+              [src]="imageService.getImageUrl(recipe.images[activeImageIndex])" 
+              [alt]="recipe.title + ' - Photo ' + (activeImageIndex + 1)"
+              class="gallery-main-img"
+            />
+
+            @if (recipe.images.length > 1) {
+              <span class="gallery-counter">
+                Photo {{ activeImageIndex + 1 }} sur {{ recipe.images.length }}
+              </span>
+
+              @if (activeImageIndex > 0) {
+                <button type="button" class="gallery-nav-btn gallery-prev-btn" (click)="prevImage()" aria-label="Photo précédente">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+              }
+
+              @if (activeImageIndex < recipe.images.length - 1) {
+                <button type="button" class="gallery-nav-btn gallery-next-btn" (click)="nextImage()" aria-label="Photo suivante">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+              }
+            }
+          </div>
+
+          <!-- Thumbnail Strip -->
+          @if (recipe.images.length > 1) {
+            <div class="gallery-thumbnails">
+              @for (img of recipe.images; track $index) {
+                <button 
+                  type="button" 
+                  class="thumbnail-btn" 
+                  [class.active]="$index === activeImageIndex"
+                  (click)="setActiveImage($index)">
+                  <img [src]="imageService.getImageUrl(img)" [alt]="'Miniature ' + ($index + 1)" class="thumbnail-img" />
+                </button>
+              }
+            </div>
+          }
+        </section>
+      }
+
+      <!-- Description Section -->
+      @if (recipe.description) {
+        <section class="description-section">
+          <div class="description-card">
+            <svg class="quote-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/>
+              <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/>
+            </svg>
+            <p class="description-text">{{ recipe.description }}</p>
+          </div>
+        </section>
+      }
+
+      @if (parsedIngredients.length > 0 || parsedSteps.length > 0) {
+        <div class="recipe-content-grid" [class.single-column]="parsedIngredients.length === 0 || parsedSteps.length === 0">
+          <!-- Ingredients Column -->
+          @if (parsedIngredients.length > 0) {
+            <section class="recipe-section ingredients-column">
+              <div class="section-card">
+                <div class="section-title-row">
+                  <div class="section-icon-badge" aria-hidden="true">🌿</div>
+                  <h2 class="section-title">Ingrédients</h2>
+                </div>
+
+                <ul class="ingredients-list">
+                  @for (item of parsedIngredients; track $index) {
+                    <li class="ingredient-item">
+                      <span class="ingredient-bullet" aria-hidden="true"></span>
+                      <span class="ingredient-text">{{ item }}</span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            </section>
+          }
+
+          <!-- Preparation Steps Column -->
+          @if (parsedSteps.length > 0) {
+            <section class="recipe-section steps-column">
+              <div class="section-card">
+                <div class="section-title-row">
+                  <div class="section-icon-badge" aria-hidden="true">🍳</div>
+                  <h2 class="section-title">Préparation</h2>
+                </div>
+
+                <div class="steps-timeline">
+                  @for (step of parsedSteps; track $index) {
+                    <div class="step-card">
+                      <div class="step-number-badge">
+                        {{ $index + 1 }}
+                      </div>
+                      <div class="step-content">
+                        <h4 class="step-header">Étape {{ $index + 1 }}</h4>
+                        <p class="step-description">{{ step }}</p>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </section>
+          }
+        </div>
+      }
+
+      <!-- Comments & Reviews Section -->
+      <section class="comments-section">
+        <div class="section-card">
+          <div class="section-title-row">
+            <div class="section-icon-badge" aria-hidden="true">💬</div>
+            <h2 class="section-title">Commentaires & Retours des Chefs ({{ comments.length }})</h2>
+          </div>
+
+          <!-- Add comment form -->
+          @if (authService.isLoggedIn()) {
+            <form (ngSubmit)="addComment()" class="new-comment-form">
+              <textarea 
+                rows="3" 
+                class="form-control comment-input" 
+                placeholder="Partagez votre avis, vos astuces ou vos félicitations..."
+                [(ngModel)]="newCommentText" 
+                name="commentText"
+              ></textarea>
+              <div class="comment-actions">
+                <button type="submit" class="btn btn-primary btn-post-comment" [disabled]="!newCommentText.trim() || isSubmittingComment">
+                  @if (isSubmittingComment) {
+                    <span>Publication...</span>
+                  } @else {
+                    <span>Publier mon commentaire</span>
+                  }
+                </button>
+              </div>
+            </form>
+          } @else {
+            <div class="comment-login-prompt">
+              <p>Vous avez testé cette recette ? 
+                <a [routerLink]="['/login']" [queryParams]="{ returnUrl: '/recipes/' + recipe.id }" class="gold-link">
+                  Connectez-vous
+                </a> 
+                pour laisser votre avis.
+              </p>
+            </div>
+          }
+
+          <!-- Comments List -->
+          @if (comments.length > 0) {
+            <div class="comments-list">
+              @for (comment of comments; track comment.id) {
+                <div class="comment-card">
+                  <div class="comment-header">
+                    <div class="comment-author-avatar">
+                      @if (getCommentAvatarUrl(comment.user.avatarUrl)) {
+                        <img [src]="getCommentAvatarUrl(comment.user.avatarUrl)" [alt]="comment.user.username" class="comment-avatar-img" />
+                      } @else {
+                        {{ comment.user.username.charAt(0).toUpperCase() }}
+                      }
+                    </div>
+                    <div class="comment-meta">
+                      <a [routerLink]="['/users', comment.user.id]" class="comment-author-name">
+                        &#64;{{ comment.user.username }}
+                      </a>
+                      <span class="comment-date">{{ comment.createdAt | date:'d MMM yyyy à HH:mm' }}</span>
+                    </div>
+
+                    @if (authService.currentUser()?.id === comment.user.id) {
+                      <button class="delete-comment-btn" (click)="deleteComment(comment.id)" title="Supprimer ce commentaire">
+                        ✕
+                      </button>
+                    }
+                  </div>
+                  <p class="comment-body">{{ comment.content }}</p>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="no-comments-text">Soyez le premier à commenter cette recette gastronomique !</p>
+          }
+        </div>
+      </section>
+    </article>
+  }
+</div>

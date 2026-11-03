@@ -1,0 +1,65 @@
+.edit-page-container {
+  max-width: 860px;
+}
+
+.page-top-bar {
+  margin-bottom: 1.5rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--silver-dark);
+  transition: all var(--transition-fast);
+}
+
+.back-link:hover {
+  color: var(--gold-dark);
+  transform: translateX(-3px);
+}
+
+.edit-header {
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.gold-badge {
+  display: inline-block;
+  font-family: var(--font-brand);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-dark);
+  background: var(--gold-pale);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(197, 155, 39, 0.25);
+  margin-bottom: 0.75rem;
+}
+
+.page-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 4rem 1rem;
+  color: var(--text-secondary);
+}
+
+.loading-state p {
+  margin-top: 1rem;
+}
+

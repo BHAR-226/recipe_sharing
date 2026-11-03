@@ -1,0 +1,165 @@
+<div class="register-container container">
+  <div class="register-card">
+    <!-- Header Crest -->
+    <div class="register-crest-wrapper">
+      <img src="recipenet-logo.jpg" alt="RecipeNet" class="register-logo-img" />
+      <span class="gold-badge">Espace Membre</span>
+    </div>
+
+    <h1 class="register-title">Rejoindre la Communauté RecipeNet</h1>
+    <p class="register-subtitle">
+      Créez votre profil de chef, partagez vos créations et échangez avec d'autres passionnés.
+    </p>
+
+    <!-- Alerts -->
+    @if (successMessage) {
+      <div class="alert alert-success">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <span>{{ successMessage }} Redirection en cours...</span>
+      </div>
+    }
+
+    @if (errorMessage) {
+      <div class="alert alert-error">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span>{{ errorMessage }}</span>
+      </div>
+    }
+
+    <!-- Form -->
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+      <!-- Profile Picture (Avatar) -->
+      <div class="form-group avatar-upload-group">
+        <label class="form-label">Photo de profil chef (optionnel)</label>
+        <div class="avatar-upload-row">
+          <div class="avatar-preview-box">
+            @if (fullAvatarUrl) {
+              <img [src]="fullAvatarUrl" alt="Aperçu profil" class="avatar-preview-img" />
+            } @else {
+              <div class="avatar-preview-placeholder">👨‍🍳</div>
+            }
+          </div>
+          <div class="avatar-upload-controls">
+            <input 
+              #avatarInput 
+              type="file" 
+              accept="image/png,image/jpeg,image/webp" 
+              (change)="onAvatarSelected($event)" 
+              style="display: none;" 
+            />
+            <button 
+              type="button" 
+              class="btn btn-silver" 
+              (click)="avatarInput.click()" 
+              [disabled]="isUploadingAvatar">
+              @if (isUploadingAvatar) {
+                <span>Envoi...</span>
+              } @else {
+                <span>Choisir une photo</span>
+              }
+            </button>
+            <span class="avatar-hint">JPG, PNG ou WEBP</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Username -->
+      <div class="form-group">
+        <label for="username" class="form-label">
+          Nom de chef / Pseudo <span class="req">*</span>
+        </label>
+        <input
+          id="username"
+          type="text"
+          class="form-control"
+          [class.is-invalid]="registerForm.controls.username.touched && registerForm.controls.username.invalid"
+          formControlName="username"
+          placeholder="ex: ChefAuguste"
+        />
+        @if (registerForm.controls.username.touched && registerForm.controls.username.invalid) {
+          <p class="form-error">Le pseudo doit comporter entre 3 et 30 caractères.</p>
+        }
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email" class="form-label">
+          Adresse Email <span class="req">*</span>
+        </label>
+        <input
+          id="email"
+          type="email"
+          class="form-control"
+          [class.is-invalid]="registerForm.controls.email.touched && registerForm.controls.email.invalid"
+          formControlName="email"
+          placeholder="ex: chef@recipenet.com"
+        />
+        @if (registerForm.controls.email.touched && registerForm.controls.email.invalid) {
+          <p class="form-error">Veuillez entrer une adresse email valide.</p>
+        }
+      </div>
+
+      <!-- Password with Eye Toggle -->
+      <div class="form-group">
+        <label for="password" class="form-label">
+          Mot de passe <span class="req">*</span>
+        </label>
+        <div class="password-input-wrapper">
+          <input
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            class="form-control"
+            [class.is-invalid]="registerForm.controls.password.touched && registerForm.controls.password.invalid"
+            formControlName="password"
+            placeholder="Au moins 8 caractères"
+          />
+          <button
+            type="button"
+            class="password-toggle-btn"
+            (click)="togglePassword()"
+            [attr.aria-label]="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+            [title]="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+          >
+            @if (showPassword) {
+              <!-- Eye Off / Masquer -->
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            } @else {
+              <!-- Eye On / Afficher -->
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            }
+          </button>
+        </div>
+        @if (registerForm.controls.password.touched && registerForm.controls.password.invalid) {
+          <p class="form-error">Le mot de passe doit comporter au moins 8 caractères.</p>
+        }
+      </div>
+
+      <!-- Submit button -->
+      <button type="submit" class="btn btn-primary submit-btn" [disabled]="isSubmitting || isUploadingAvatar">
+        @if (isSubmitting) {
+          <span class="btn-spinner"></span>
+          <span>Création du profil en cours...</span>
+        } @else {
+          <span>Rejoindre la brigade RecipeNet</span>
+        }
+      </button>
+
+      <div class="register-footer-text">
+        <p>Déjà membre ? <a routerLink="/login" class="gold-link">Se connecter</a></p>
+      </div>
+    </form>
+  </div>
+</div>

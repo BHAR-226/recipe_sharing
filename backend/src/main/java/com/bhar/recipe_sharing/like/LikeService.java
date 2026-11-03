@@ -26,24 +26,28 @@ public class LikeService {
         RecipeModel recipe = recipeRepo.findById(recipeId)
                 .orElseThrow(() -> new NotFoundException("Recipe not found : " + recipeId));
 
-        LikeModel like = new LikeModel();
-        like.setUser(user);
-        like.setRecipe(recipe);
-        return likeRepo.save(like);
+        // Prevent duplicate likes
+        return likeRepo.findByUserIdAndRecipeId(userId, recipeId)
+                .orElseGet(() -> {
+                    LikeModel like = new LikeModel();
+                    like.setUser(user);
+                    like.setRecipe(recipe);
+                    return likeRepo.save(like);
+                });
     }
 
     public void unlike(Long userId, Long recipeId) {
-        LikeModel like = likeRepo.findByUserIdAndRecipeId(userId, recipeId)
-            .orElseThrow(() -> new NotFoundException("Like not found : user "
-            + userId + " -> recipe " + recipeId));
-
-        likeRepo.delete(like);
-}
+        likeRepo.findByUserIdAndRecipeId(userId, recipeId).ifPresent(likeRepo::delete);
+    }
 
     public int likeNumberByRecipe(Long recipeId){
         RecipeModel recipe = recipeRepo.findById(recipeId)
         .orElseThrow(() -> new NotFoundException(
                 "Recipe not found : " + recipeId));
         return likeRepo.countByRecipe(recipe);
+    }
+
+    public boolean hasUserLiked(Long userId, Long recipeId) {
+        return likeRepo.findByUserIdAndRecipeId(userId, recipeId).isPresent();
     }
 }

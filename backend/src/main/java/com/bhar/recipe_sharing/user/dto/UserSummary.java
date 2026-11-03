@@ -4,9 +4,11 @@ import com.bhar.recipe_sharing.user.UserModel;
 
 public record UserSummary(
     Long id,
-    String username
+    String username,
+    String avatarUrl
 ) {
     public static UserSummary from(UserModel user) {
-        return new UserSummary(user.getId(), user.getUsername());
+        if (user == null) return null;
+        return new UserSummary(user.getId(), user.getUsername(), user.getAvatarUrl());
     }
 }

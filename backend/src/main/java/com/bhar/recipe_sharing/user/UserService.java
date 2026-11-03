@@ -55,10 +55,13 @@ public class UserService {
             throw new UsernameAlreadyUsedException(request.username());
         }
 
-        UserModel user= new UserModel();
+        UserModel user = new UserModel();
         user.setEmail(email);
         user.setUsername(request.username());
         user.setPwdHash(passwordEncoder.encode(request.password()));
+        if (request.avatarUrl() != null && !request.avatarUrl().isBlank()) {
+            user.setAvatarUrl(request.avatarUrl().trim());
+        }
         return toResponse(userRepo.save(user));
     }
 
@@ -84,6 +87,11 @@ public class UserService {
             user.setPwdHash(passwordEncoder.encode(request.password()));
         }
 
+        if (request.avatarUrl() != null) {
+            String trimmed = request.avatarUrl().trim();
+            user.setAvatarUrl(trimmed.isEmpty() ? null : trimmed);
+        }
+
         return toResponse(userRepo.save(user));
     }
 
@@ -106,13 +114,7 @@ public class UserService {
     }
 
     private UserResponse toResponse(UserModel user){
-        return new UserResponse(
-            user.getId(),
-            user.getUsername(),
-            user.getEmail(),
-            user.getRole(),
-            user.getCreatedAt()
-        );
+        return UserResponse.from(user);
     }
 
 }
