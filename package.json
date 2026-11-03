@@ -1,0 +1,11 @@
+{
+  "name": "recipenet-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RecipeNet root project shortcuts",
+  "scripts": {
+    "start": "npm start --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "test": "npm test --prefix frontend"
+  }
+}
