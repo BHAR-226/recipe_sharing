@@ -9,9 +9,12 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -21,11 +24,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.bhar.recipe_sharing.exception.BadRequestException;
 import com.bhar.recipe_sharing.exception.NotFoundException;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 
 import jakarta.annotation.PostConstruct;
 
 @Service
 public class FileStorageService {
+
+    private static final Logger log = LoggerFactory.getLogger(FileStorageService.class);
 
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
         "jpg", "jpeg", "png", "webp", "gif", "svg"
@@ -34,14 +41,35 @@ public class FileStorageService {
     @Value("${app.upload.dir:uploads/images}")
     private String configuredUploadDir;
 
+    @Value("${cloudinary.cloud-name:}")
+    private String cloudName;
+
+    @Value("${cloudinary.api-key:}")
+    private String apiKey;
+
+    @Value("${cloudinary.api-secret:}")
+    private String apiSecret;
+
+    private Cloudinary cloudinary;
     private Path rootLocation;
 
     @PostConstruct
     public void init() {
+        if (isCloudinaryConfigured()) {
+            this.cloudinary = new Cloudinary(ObjectUtils.asMap(
+                "cloud_name", cloudName.trim(),
+                "api_key", apiKey.trim(),
+                "api_secret", apiSecret.trim(),
+                "secure", true
+            ));
+            log.info("Cloudinary storage initialized successfully for cloud: {}", cloudName.trim());
+        } else {
+            log.info("Cloudinary credentials not provided. Using local disk storage.");
+        }
+
         Path directPath = Paths.get(configuredUploadDir).toAbsolutePath().normalize();
         Path backendPrefixed = Paths.get("backend", configuredUploadDir).toAbsolutePath().normalize();
 
-        // If running from workspace root where backend/uploads/images exists, prefer that
         if (!Files.exists(directPath) && Files.exists(backendPrefixed.getParent())) {
             this.rootLocation = backendPrefixed;
         } else {
@@ -53,6 +81,12 @@ public class FileStorageService {
         } catch (IOException e) {
             throw new RuntimeException("Could not initialize storage directory", e);
         }
+    }
+
+    public boolean isCloudinaryConfigured() {
+        return cloudName != null && !cloudName.isBlank()
+            && apiKey != null && !apiKey.isBlank()
+            && apiSecret != null && !apiSecret.isBlank();
     }
 
     public String store(MultipartFile file) {
@@ -69,6 +103,27 @@ public class FileStorageService {
             throw new BadRequestException("Format d'image non supporté. Formats acceptés : JPG, PNG, WEBP, GIF, SVG");
         }
 
+        // If Cloudinary is configured, upload to Cloudinary
+        if (isCloudinaryConfigured()) {
+            try {
+                Map<?, ?> uploadResult = this.cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap(
+                        "folder", "recipenet",
+                        "resource_type", "image"
+                    )
+                );
+                String secureUrl = (String) uploadResult.get("secure_url");
+                if (secureUrl != null && !secureUrl.isBlank()) {
+                    log.info("Uploaded image to Cloudinary: {}", secureUrl);
+                    return secureUrl;
+                }
+            } catch (Exception e) {
+                log.error("Failed to upload to Cloudinary, falling back to local disk storage", e);
+            }
+        }
+
+        // Fallback to local disk storage
         String safeFileName = UUID.randomUUID() + "." + extension.toLowerCase(Locale.ROOT);
         Path destinationFile = this.rootLocation.resolve(safeFileName).normalize().toAbsolutePath();
 
@@ -116,4 +171,3 @@ public class FileStorageService {
         return "jpg";
     }
 }
-

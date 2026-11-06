@@ -33,9 +33,9 @@ public class ImageController {
 
     @PostMapping("/upload")
     public ResponseEntity<ImageUploadResponse> uploadSingle(@RequestParam("file") MultipartFile file) {
-        String filename = storageService.store(file);
-        String url = "/api/images/" + filename;
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ImageUploadResponse(url, filename));
+        String stored = storageService.store(file);
+        String url = (stored.startsWith("http://") || stored.startsWith("https://")) ? stored : "/api/images/" + stored;
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ImageUploadResponse(url, stored));
     }
 
     @PostMapping("/upload-multiple")
@@ -44,8 +44,9 @@ public class ImageController {
         if (files != null) {
             for (MultipartFile file : files) {
                 if (file != null && !file.isEmpty()) {
-                    String filename = storageService.store(file);
-                    responses.add(new ImageUploadResponse("/api/images/" + filename, filename));
+                    String stored = storageService.store(file);
+                    String url = (stored.startsWith("http://") || stored.startsWith("https://")) ? stored : "/api/images/" + stored;
+                    responses.add(new ImageUploadResponse(url, stored));
                 }
             }
         }
