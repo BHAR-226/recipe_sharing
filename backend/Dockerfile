@@ -20,7 +20,7 @@ RUN mkdir -p uploads/images
 # Copy the compiled jar from build stage
 COPY --from=build /app/target/*.jar app.jar
 
-ENV PORT=8080
-EXPOSE 8080
+ENV PORT=10000
+EXPOSE 10000
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
